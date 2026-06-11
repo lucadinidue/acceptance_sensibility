@@ -1,2 +1,4 @@
 models
 data/acceptance_datasets/src
+data/representations
+bash_script/
