@@ -10,19 +10,19 @@ def main():
     df = df[df["Inspiring source for the phenomenon"] != "COnVERSA"]
 
     with open(out_path, "w", encoding="utf-8") as f:
-        for _, row in df.iterrows():
-            pair_num = str(row["Pair Number "]).zfill(3)
+        for row_idx, row in df.iterrows():
             metadata = {
                 "macro_phenomenon": row["Macro-phenomenon"],
                 "micro_phenomenon": row["Micro-phenomenon"],
             }
 
-            for label, sentence, acceptability in [
-                ("good", row["Good Generated Sentence"], 1),
-                ("bad",  row["Bad Generated Sentence"],  0),
-            ]:
+            for sent_idx, (sentence, acceptability) in enumerate([
+                (row["Good Generated Sentence"], 1),
+                (row["Bad Generated Sentence"],  0),
+            ]):
+                sent_id = 2*row_idx + sent_idx
                 record = {
-                    "id": f"BL_{pair_num}_{label}",
+                    "id": f"BL_{sent_id}",
                     "sentence": sentence,
                     "acceptability": acceptability,
                     "source": "blimp_it",
