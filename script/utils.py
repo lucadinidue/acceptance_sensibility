@@ -23,8 +23,8 @@ def load_representations(representations_path, model_name, dataset_name):
 
     return ids, embeddings
 
-def load_acceptability_mask(dataset_path, ids):
+def load_acceptability_labels(dataset_path, ids, is_mask=False):
     dataset = pd.read_json(dataset_path, lines=True).set_index("id")
     acceptability = dataset.loc[ids]['acceptability'].tolist()
-    acceptability_mask = np.array(acceptability, dtype=bool)
-    return acceptability_mask
+    acceptability = np.array(acceptability, dtype=bool if is_mask else int)
+    return acceptability
