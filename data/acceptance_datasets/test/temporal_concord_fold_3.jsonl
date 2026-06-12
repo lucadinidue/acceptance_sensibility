@@ -1,0 +1,309 @@
+{"id": "TC_0000", "source": "TC", "sentence": "Stefano ritornò a Roma ieri mattina per questioni di lavoro di estrema urgenza. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0001", "source": "TC", "sentence": "Stefano ritornerà a Roma ieri mattina per questioni di lavoro di estrema urgenza. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0002", "source": "TC", "sentence": "Stefano ieri mattina ritornò a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0003", "source": "TC", "sentence": "Stefano ieri mattina ritornerà a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0004", "source": "TC", "sentence": "Ieri mattina Stefano ritornò a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0005", "source": "TC", "sentence": "Ieri mattina Stefano ritornerà a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0006", "source": "TC", "sentence": "Stefano ritornò a Roma domani mattina per questioni di lavoro di estrema urgenza. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0007", "source": "TC", "sentence": "Stefano ritornerà a Roma domani mattina per questioni di lavoro di estrema urgenza. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0008", "source": "TC", "sentence": "Stefano domani mattina ritornò a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0009", "source": "TC", "sentence": "Stefano domani mattina ritornerà a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0010", "source": "TC", "sentence": "Domani mattina Stefano ritornò a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0011", "source": "TC", "sentence": "Domani mattina Stefano ritornerà a Roma per questioni di lavoro di estrema urgenza. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0072", "source": "TC", "sentence": "Il magnate acquistò dei dipinti ieri sera per la residenza estiva in Inghilterra. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0073", "source": "TC", "sentence": "Il magnate acquisterà dei dipinti ieri sera per la residenza estiva in Inghilterra. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0074", "source": "TC", "sentence": "Il magnate ieri sera acquistò dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0075", "source": "TC", "sentence": "Il magnate ieri sera acquisterà dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0076", "source": "TC", "sentence": "Ieri sera il magnate acquistò dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0077", "source": "TC", "sentence": "Ieri sera il magnate acquisterà dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0078", "source": "TC", "sentence": "Il magnate acquistò dei dipinti domani sera per la residenza estiva in Inghilterra. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0079", "source": "TC", "sentence": "Il magnate acquisterà dei dipinti domani sera per la residenza estiva in Inghilterra. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0080", "source": "TC", "sentence": "Il magnate domani sera acquistò dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0081", "source": "TC", "sentence": "Il magnate domani sera acquisterà dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0082", "source": "TC", "sentence": "Domani sera il magnate acquistò dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0083", "source": "TC", "sentence": "Domani sera il magnate acquisterà dei dipinti per la residenza estiva in Inghilterra. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0120", "source": "TC", "sentence": "Lo scoiattolo scovò una ghianda ieri sera tra le foglie degli alberi di quercia. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0121", "source": "TC", "sentence": "Lo scoiattolo scoverà una ghianda ieri sera tra le foglie degli alberi di quercia. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0122", "source": "TC", "sentence": "Lo scoiattolo ieri sera scovò una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0123", "source": "TC", "sentence": "Lo scoiattolo ieri sera scoverà una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0124", "source": "TC", "sentence": "Ieri sera lo scoiattolo scovò una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0125", "source": "TC", "sentence": "Ieri sera lo scoiattolo scoverà una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0126", "source": "TC", "sentence": "Lo scoiattolo scovò una ghianda domani sera tra le foglie degli alberi di quercia. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0127", "source": "TC", "sentence": "Lo scoiattolo scoverà una ghianda domani sera tra le foglie degli alberi di quercia. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0128", "source": "TC", "sentence": "Lo scoiattolo domani sera scovò una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0129", "source": "TC", "sentence": "Lo scoiattolo domani sera scoverà una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0130", "source": "TC", "sentence": "Domani sera lo scoiattolo scovò una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0131", "source": "TC", "sentence": "Domani sera lo scoiattolo scoverà una ghianda tra le foglie degli alberi di quercia. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0192", "source": "TC", "sentence": "Frodo iniziò il viaggio ieri mattina con i compagni verso le terre oscure. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0193", "source": "TC", "sentence": "Frodo inizierà il viaggio ieri mattina con i compagni verso le terre oscure. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0194", "source": "TC", "sentence": "Frodo ieri mattina iniziò il viaggio con i compagni verso le terre oscure. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0195", "source": "TC", "sentence": "Frodo ieri mattina inizierà il viaggio con i compagni verso le terre oscure. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0196", "source": "TC", "sentence": "Ieri mattina Frodo iniziò il viaggio con i compagni verso le terre oscure. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0197", "source": "TC", "sentence": "Ieri mattina Frodo inizierà il viaggio con i compagni verso le terre oscure. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0198", "source": "TC", "sentence": "Frodo iniziò il viaggio domani mattina con i compagni verso le terre oscure. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0199", "source": "TC", "sentence": "Frodo inizierà il viaggio domani mattina con i compagni verso le terre oscure. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0200", "source": "TC", "sentence": "Frodo domani mattina iniziò il viaggio con i compagni verso le terre oscure. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0201", "source": "TC", "sentence": "Frodo domani mattina inizierà il viaggio con i compagni verso le terre oscure. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0202", "source": "TC", "sentence": "Domani mattina Frodo iniziò il viaggio con i compagni verso le terre oscure. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0203", "source": "TC", "sentence": "Domani mattina Frodo inizierà il viaggio con i compagni verso le terre oscure. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0240", "source": "TC", "sentence": "Il falco spiccò il volo ieri mattina verso Sud in cerca di cibo. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0241", "source": "TC", "sentence": "Il falco spiccherà il volo ieri mattina verso Sud in cerca di cibo. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0242", "source": "TC", "sentence": "Il falco ieri mattina spiccò il volo verso Sud in cerca di cibo. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0243", "source": "TC", "sentence": "Il falco ieri mattina spiccherà il volo verso Sud in cerca di cibo. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0244", "source": "TC", "sentence": "Ieri mattina il falco spiccò il volo verso Sud in cerca di cibo. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0245", "source": "TC", "sentence": "Ieri mattina il falco spiccherà il volo verso Sud in cerca di cibo. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0246", "source": "TC", "sentence": "Il falco spiccò il volo domani mattina verso Sud in cerca di cibo. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0247", "source": "TC", "sentence": "Il falco spiccherà il volo domani mattina verso Sud in cerca di cibo. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0248", "source": "TC", "sentence": "Il falco domani mattina spiccò il volo verso Sud in cerca di cibo. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0249", "source": "TC", "sentence": "Il falco domani mattina spiccherà il volo verso Sud in cerca di cibo. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0250", "source": "TC", "sentence": "Domani mattina il falco spiccò il volo verso Sud in cerca di cibo. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0251", "source": "TC", "sentence": "Domani mattina il falco spiccherà il volo verso Sud in cerca di cibo. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0288", "source": "TC", "sentence": "Il bambino raggiunse il fiume ieri mattina con la bicicletta della sorella maggiore. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0289", "source": "TC", "sentence": "Il bambino raggiungerà il fiume ieri mattina con la bicicletta della sorella maggiore. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0290", "source": "TC", "sentence": "Il bambino ieri mattina raggiunse il fiume con la bicicletta della sorella maggiore. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0291", "source": "TC", "sentence": "Il bambino ieri mattina raggiungerà il fiume con la bicicletta della sorella maggiore. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0292", "source": "TC", "sentence": "Ieri mattina il bambino raggiunse il fiume con la bicicletta della sorella maggiore. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0293", "source": "TC", "sentence": "Ieri mattina il bambino raggiungerà il fiume con la bicicletta della sorella maggiore. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0294", "source": "TC", "sentence": "Il bambino raggiunse il fiume domani mattina con la bicicletta della sorella maggiore. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0295", "source": "TC", "sentence": "Il bambino raggiungerà il fiume domani mattina con la bicicletta della sorella maggiore. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0296", "source": "TC", "sentence": "Il bambino domani mattina raggiunse il fiume con la bicicletta della sorella maggiore. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0297", "source": "TC", "sentence": "Il bambino domani mattina raggiungerà il fiume con la bicicletta della sorella maggiore. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0298", "source": "TC", "sentence": "Domani mattina il bambino raggiunse il fiume con la bicicletta della sorella maggiore. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0299", "source": "TC", "sentence": "Domani mattina il bambino raggiungerà il fiume con la bicicletta della sorella maggiore. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0348", "source": "TC", "sentence": "Il sindaco raggiunse gli assessori ieri pomeriggio nella sala principale del Comune. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0349", "source": "TC", "sentence": "Il sindaco raggiungerà gli assessori ieri pomeriggio nella sala principale del Comune. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0350", "source": "TC", "sentence": "Il sindaco ieri pomeriggio raggiunse gli assessori nella sala principale del Comune. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0351", "source": "TC", "sentence": "Il sindaco ieri pomeriggio raggiungerà gli assessori nella sala principale del Comune. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0352", "source": "TC", "sentence": "Ieri pomeriggio il sindaco raggiunse gli assessori nella sala principale del Comune. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0353", "source": "TC", "sentence": "Ieri pomeriggio il sindaco raggiungerà gli assessori nella sala principale del Comune. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0354", "source": "TC", "sentence": "Il sindaco raggiunse gli assessori domani pomeriggio nella sala principale del Comune. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0355", "source": "TC", "sentence": "Il sindaco raggiungerà gli assessori domani pomeriggio nella sala principale del Comune. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0356", "source": "TC", "sentence": "Il sindaco domani pomeriggio raggiunse gli assessori nella sala principale del Comune. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0357", "source": "TC", "sentence": "Il sindaco domani pomeriggio raggiungerà gli assessori nella sala principale del Comune. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0358", "source": "TC", "sentence": "Domani pomeriggio il sindaco raggiunse gli assessori nella sala principale del Comune. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0359", "source": "TC", "sentence": "Domani pomeriggio il sindaco raggiungerà gli assessori nella sala principale del Comune. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0420", "source": "TC", "sentence": "Il tifoso festeggiò la vittoria ieri notte nel pub vicino allo stadio comunale. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0421", "source": "TC", "sentence": "Il tifoso festeggerà la vittoria ieri notte nel pub vicino allo stadio comunale. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0422", "source": "TC", "sentence": "Il tifoso ieri notte festeggiò la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0423", "source": "TC", "sentence": "Il tifoso ieri notte festeggerà la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0424", "source": "TC", "sentence": "Ieri notte il tifoso festeggiò la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0425", "source": "TC", "sentence": "Ieri notte il tifoso festeggerà la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0426", "source": "TC", "sentence": "Il tifoso festeggiò la vittoria domani notte nel pub vicino allo stadio comunale. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0427", "source": "TC", "sentence": "Il tifoso festeggerà la vittoria domani notte nel pub vicino allo stadio comunale. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0428", "source": "TC", "sentence": "Il tifoso domani notte festeggiò la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0429", "source": "TC", "sentence": "Il tifoso domani notte festeggerà la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0430", "source": "TC", "sentence": "Domani notte il tifoso festeggiò la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0431", "source": "TC", "sentence": "Domani notte il tifoso festeggerà la vittoria nel pub vicino allo stadio comunale. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0444", "source": "TC", "sentence": "La pittrice regalò un quadro ieri pomeriggio al promotore della mostra nel museo. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0445", "source": "TC", "sentence": "La pittrice regalerà un quadro ieri pomeriggio al promotore della mostra nel museo. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0446", "source": "TC", "sentence": "La pittrice ieri pomeriggio regalò un quadro al promotore della mostra nel museo. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0447", "source": "TC", "sentence": "La pittrice ieri pomeriggio regalerà un quadro al promotore della mostra nel museo. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0448", "source": "TC", "sentence": "Ieri pomeriggio la pittrice regalò un quadro al promotore della mostra nel museo. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0449", "source": "TC", "sentence": "Ieri pomeriggio la pittrice regalerà un quadro al promotore della mostra nel museo. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0450", "source": "TC", "sentence": "La pittrice regalò un quadro domani pomeriggio al promotore della mostra nel museo. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0451", "source": "TC", "sentence": "La pittrice regalerà un quadro domani pomeriggio al promotore della mostra nel museo. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0452", "source": "TC", "sentence": "La pittrice domani pomeriggio regalò un quadro al promotore della mostra nel museo. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0453", "source": "TC", "sentence": "La pittrice domani pomeriggio regalerà un quadro al promotore della mostra nel museo. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0454", "source": "TC", "sentence": "Domani pomeriggio la pittrice regalò un quadro al promotore della mostra nel museo. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0455", "source": "TC", "sentence": "Domani pomeriggio la pittrice regalerà un quadro al promotore della mostra nel museo. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0528", "source": "TC", "sentence": "Il medico annullò gli appuntamenti ieri mattina a causa di un intervento urgente. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0529", "source": "TC", "sentence": "Il medico annullerà gli appuntamenti ieri mattina a causa di un intervento urgente. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0530", "source": "TC", "sentence": "Il medico ieri mattina annullò gli appuntamenti a causa di un intervento urgente. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0531", "source": "TC", "sentence": "Il medico ieri mattina annullerà gli appuntamenti a causa di un intervento urgente. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0532", "source": "TC", "sentence": "Ieri mattina il medico annullò gli appuntamenti a causa di un intervento urgente. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0533", "source": "TC", "sentence": "Ieri mattina il medico annullerà gli appuntamenti a causa di un intervento urgente. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0534", "source": "TC", "sentence": "Il medico annullò gli appuntamenti domani mattina a causa di un intervento urgente. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0535", "source": "TC", "sentence": "Il medico annullerà gli appuntamenti domani mattina a causa di un intervento urgente. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0536", "source": "TC", "sentence": "Il medico domani mattina annullò gli appuntamenti a causa di un intervento urgente. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0537", "source": "TC", "sentence": "Il medico domani mattina annullerà gli appuntamenti a causa di un intervento urgente. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0538", "source": "TC", "sentence": "Domani mattina il medico annullò gli appuntamenti a causa di un intervento urgente. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0539", "source": "TC", "sentence": "Domani mattina il medico annullerà gli appuntamenti a causa di un intervento urgente. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0576", "source": "TC", "sentence": "Il barista preparò un caffè ieri mattina per la studentessa seduta al tavolo. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0577", "source": "TC", "sentence": "Il barista preparerà un caffè ieri mattina per la studentessa seduta al tavolo. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0578", "source": "TC", "sentence": "Il barista ieri mattina preparò un caffè per la studentessa seduta al tavolo. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0579", "source": "TC", "sentence": "Il barista ieri mattina preparerà un caffè per la studentessa seduta al tavolo. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0580", "source": "TC", "sentence": "Ieri mattina il barista preparò un caffè per la studentessa seduta al tavolo. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0581", "source": "TC", "sentence": "Ieri mattina il barista preparerà un caffè per la studentessa seduta al tavolo. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0582", "source": "TC", "sentence": "Il barista preparò un caffè domani mattina per la studentessa seduta al tavolo. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0583", "source": "TC", "sentence": "Il barista preparerà un caffè domani mattina per la studentessa seduta al tavolo. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0584", "source": "TC", "sentence": "Il barista domani mattina preparò un caffè per la studentessa seduta al tavolo. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0585", "source": "TC", "sentence": "Il barista domani mattina preparerà un caffè per la studentessa seduta al tavolo. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0586", "source": "TC", "sentence": "Domani mattina il barista preparò un caffè per la studentessa seduta al tavolo. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0587", "source": "TC", "sentence": "Domani mattina il barista preparerà un caffè per la studentessa seduta al tavolo. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0612", "source": "TC", "sentence": "Il malavitoso chiamò gli scagnozzi ieri notte per il rapimento di un imprenditore. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0613", "source": "TC", "sentence": "Il malavitoso chiamerà gli scagnozzi ieri notte per il rapimento di un imprenditore. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0614", "source": "TC", "sentence": "Il malavitoso ieri notte chiamò gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0615", "source": "TC", "sentence": "Il malavitoso ieri notte chiamerà gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0616", "source": "TC", "sentence": "Ieri notte il malavitoso chiamò gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0617", "source": "TC", "sentence": "Ieri notte il malavitoso chiamerà gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0618", "source": "TC", "sentence": "Il malavitoso chiamò gli scagnozzi domani notte per il rapimento di un imprenditore. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0619", "source": "TC", "sentence": "Il malavitoso chiamerà gli scagnozzi domani notte per il rapimento di un imprenditore. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0620", "source": "TC", "sentence": "Il malavitoso domani notte chiamò gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0621", "source": "TC", "sentence": "Il malavitoso domani notte chiamerà gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0622", "source": "TC", "sentence": "Domani notte il malavitoso chiamò gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0623", "source": "TC", "sentence": "Domani notte il malavitoso chiamerà gli scagnozzi per il rapimento di un imprenditore. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0684", "source": "TC", "sentence": "La signora sfogliò una rivista ieri pomeriggio nella sala di attesa del parrucchiere. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0685", "source": "TC", "sentence": "La signora sfoglierà una rivista ieri pomeriggio nella sala di attesa del parrucchiere. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0686", "source": "TC", "sentence": "La signora ieri pomeriggio sfogliò una rivista nella sala di attesa del parrucchiere. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0687", "source": "TC", "sentence": "La signora ieri pomeriggio sfoglierà una rivista nella sala di attesa del parrucchiere. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0688", "source": "TC", "sentence": "Ieri pomeriggio la signora sfogliò una rivista nella sala di attesa del parrucchiere. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0689", "source": "TC", "sentence": "Ieri pomeriggio la signora sfoglierà una rivista nella sala di attesa del parrucchiere. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0690", "source": "TC", "sentence": "La signora sfogliò una rivista domani pomeriggio nella sala di attesa del parrucchiere. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0691", "source": "TC", "sentence": "La signora sfoglierà una rivista domani pomeriggio nella sala di attesa del parrucchiere. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0692", "source": "TC", "sentence": "La signora domani pomeriggio sfogliò una rivista nella sala di attesa del parrucchiere. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0693", "source": "TC", "sentence": "La signora domani pomeriggio sfoglierà una rivista nella sala di attesa del parrucchiere. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0694", "source": "TC", "sentence": "Domani pomeriggio la signora sfogliò una rivista nella sala di attesa del parrucchiere. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0695", "source": "TC", "sentence": "Domani pomeriggio la signora sfoglierà una rivista nella sala di attesa del parrucchiere. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0744", "source": "TC", "sentence": "La zia organizzò una cena ieri sera per i parenti giunti dal Perù. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0745", "source": "TC", "sentence": "La zia organizzerà una cena ieri sera per i parenti giunti dal Perù. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0746", "source": "TC", "sentence": "La zia ieri sera organizzò una cena per i parenti giunti dal Perù. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0747", "source": "TC", "sentence": "La zia ieri sera organizzerà una cena per i parenti giunti dal Perù. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0748", "source": "TC", "sentence": "Ieri sera la zia organizzò una cena per i parenti giunti dal Perù. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0749", "source": "TC", "sentence": "Ieri sera la zia organizzerà una cena per i parenti giunti dal Perù. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0750", "source": "TC", "sentence": "La zia organizzò una cena domani sera per i parenti giunti dal Perù. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0751", "source": "TC", "sentence": "La zia organizzerà una cena domani sera per i parenti giunti dal Perù. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0752", "source": "TC", "sentence": "La zia domani sera organizzò una cena per i parenti giunti dal Perù. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0753", "source": "TC", "sentence": "La zia domani sera organizzerà una cena per i parenti giunti dal Perù. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0754", "source": "TC", "sentence": "Domani sera la zia organizzò una cena per i parenti giunti dal Perù. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0755", "source": "TC", "sentence": "Domani sera la zia organizzerà una cena per i parenti giunti dal Perù. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0816", "source": "TC", "sentence": "La gatta svegliò la padrona ieri mattina con un miagolìo acuto ed incessante. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0817", "source": "TC", "sentence": "La gatta sveglierà la padrona ieri mattina con un miagolìo acuto ed incessante. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0818", "source": "TC", "sentence": "La gatta ieri mattina svegliò la padrona con un miagolìo acuto ed incessante. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0819", "source": "TC", "sentence": "La gatta ieri mattina sveglierà la padrona con un miagolìo acuto ed incessante. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0820", "source": "TC", "sentence": "Ieri mattina la gatta svegliò la padrona con un miagolìo acuto ed incessante. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0821", "source": "TC", "sentence": "Ieri mattina la gatta sveglierà la padrona con un miagolìo acuto ed incessante. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0822", "source": "TC", "sentence": "La gatta svegliò la padrona domani mattina con un miagolìo acuto ed incessante. ", "acceptability": 0, "metadata": "after"}
+{"id": "TC_0823", "source": "TC", "sentence": "La gatta sveglierà la padrona domani mattina con un miagolìo acuto ed incessante. ", "acceptability": 1, "metadata": "after"}
+{"id": "TC_0824", "source": "TC", "sentence": "La gatta domani mattina svegliò la padrona con un miagolìo acuto ed incessante. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0825", "source": "TC", "sentence": "La gatta domani mattina sveglierà la padrona con un miagolìo acuto ed incessante. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0826", "source": "TC", "sentence": "Domani mattina la gatta svegliò la padrona con un miagolìo acuto ed incessante. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0827", "source": "TC", "sentence": "Domani mattina la gatta sveglierà la padrona con un miagolìo acuto ed incessante. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0872", "source": "TC", "sentence": "Ieri sera la ballerina partecipò al provino insieme ad altre candidate molto competitive. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0913", "source": "TC", "sentence": "Ieri pomeriggio il contadino piantò più di cinquanta alberi di mele. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0914", "source": "TC", "sentence": "Ieri pomeriggio il contadino pianterà più di cinquanta alberi di mele. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0915", "source": "TC", "sentence": "Domani pomeriggio il contadino piantò più di cinquanta alberi di mele. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0916", "source": "TC", "sentence": "Domani pomeriggio il contadino pianterà più di cinquanta alberi di mele. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0917", "source": "TC", "sentence": "Il contadino domani pomeriggio piantò più di cinquanta alberi di mele. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0918", "source": "TC", "sentence": "Il contadino domani pomeriggio pianterà più di cinquanta alberi di mele. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0919", "source": "TC", "sentence": "Il contadino ieri pomeriggio pianterà più di cinquanta alberi di mele. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0920", "source": "TC", "sentence": "Il contadino ieri pomeriggio piantò più di cinquanta alberi di mele. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0961", "source": "TC", "sentence": "Ieri sera il pirata attaccò il galeone pieno di armi e di oro. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0962", "source": "TC", "sentence": "Ieri sera il pirata attaccherà il galeone pieno di armi e di oro. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0963", "source": "TC", "sentence": "Domani sera il pirata attaccò il galeone pieno di armi e di oro. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0964", "source": "TC", "sentence": "Domani sera il pirata attaccherà il galeone pieno di armi e di oro. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0965", "source": "TC", "sentence": "Il pirata domani sera attaccò il galeone pieno di armi e di oro. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0966", "source": "TC", "sentence": "Il pirata domani sera attaccherà il galeone pieno di armi e di oro. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0967", "source": "TC", "sentence": "Il pirata ieri sera attaccherà il galeone pieno di armi e di oro. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0968", "source": "TC", "sentence": "Il pirata ieri sera attaccò il galeone pieno di armi e di oro. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0993", "source": "TC", "sentence": "Ieri notte il mago affascinò il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0994", "source": "TC", "sentence": "Ieri notte il mago affascinerà il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0995", "source": "TC", "sentence": "Domani notte il mago affascinò il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_0996", "source": "TC", "sentence": "Domani notte il mago affascinerà il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_0997", "source": "TC", "sentence": "Il mago domani notte affascinò il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_0998", "source": "TC", "sentence": "Il mago domani notte affascinerà il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_0999", "source": "TC", "sentence": "Il mago ieri notte affascinerà il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1000", "source": "TC", "sentence": "Il mago ieri notte affascinò il pubblico con giochi di prestigio molto pericolosi. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1049", "source": "TC", "sentence": "Ieri mattina il treno ritardò a causa dello sciopero programmato. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1050", "source": "TC", "sentence": "Ieri mattina il treno ritarderà a causa dello sciopero programmato. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1051", "source": "TC", "sentence": "Domani mattina il treno ritardò a causa dello sciopero programmato. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1052", "source": "TC", "sentence": "Domani mattina il treno ritarderà a causa dello sciopero programmato. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1053", "source": "TC", "sentence": "Il treno domani mattina ritardò a causa dello sciopero programmato. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1054", "source": "TC", "sentence": "Il treno domani mattina ritarderà a causa dello sciopero programmato. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1055", "source": "TC", "sentence": "Il treno ieri mattina ritarderà a causa dello sciopero programmato. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1056", "source": "TC", "sentence": "Il treno ieri mattina ritardò a causa dello sciopero programmato. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1081", "source": "TC", "sentence": "Ieri mattina il medico annullò gli appuntamenti per andare ad un convegno. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1082", "source": "TC", "sentence": "Ieri mattina il medico annullerà gli appuntamenti per andare ad un convegno. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1083", "source": "TC", "sentence": "Domani mattina il medico annullò gli appuntamenti per andare ad un convegno. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1084", "source": "TC", "sentence": "Domani mattina il medico annullerà gli appuntamenti per andare ad un convegno. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1085", "source": "TC", "sentence": "Il medico domani mattina annullò gli appuntamenti per andare ad un convegno. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1086", "source": "TC", "sentence": "Il medico domani mattina annullerà gli appuntamenti per andare ad un convegno. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1087", "source": "TC", "sentence": "Il medico ieri mattina annullerà gli appuntamenti per andare ad un convegno. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1088", "source": "TC", "sentence": "Il medico ieri mattina annullò gli appuntamenti per andare ad un convegno. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1137", "source": "TC", "sentence": "Ieri mattina il professore tenne una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1138", "source": "TC", "sentence": "Ieri mattina il professore terrà una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1139", "source": "TC", "sentence": "Domani mattina il professore tenne una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1140", "source": "TC", "sentence": "Domani mattina il professore terrà una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1141", "source": "TC", "sentence": "Il professore domani mattina tenne una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1142", "source": "TC", "sentence": "Il professore domani mattina terrà una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1143", "source": "TC", "sentence": "Il professore ieri mattina terrà una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1144", "source": "TC", "sentence": "Il professore ieri mattina tenne una lezione sulla grammatica generativa di Chomsky. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1177", "source": "TC", "sentence": "Ieri notte il soldato rientrò nella base militare di Livorno. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1178", "source": "TC", "sentence": "Ieri notte il soldato rientrerà nella base militare di Livorno. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1179", "source": "TC", "sentence": "Domani notte il soldato rientrò nella base militare di Livorno. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1180", "source": "TC", "sentence": "Domani notte il soldato rientrerà nella base militare di Livorno. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1181", "source": "TC", "sentence": "Il soldato domani notte rientrò nella base militare di Livorno. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1182", "source": "TC", "sentence": "Il soldato domani notte rientrerà nella base militare di Livorno. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1183", "source": "TC", "sentence": "Il soldato ieri notte rientrerà nella base militare di Livorno. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1184", "source": "TC", "sentence": "Il soldato ieri notte rientrò nella base militare di Livorno. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1217", "source": "TC", "sentence": "Ieri mattina il dottore andò a visitare i pazienti del nuovo reparto. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1218", "source": "TC", "sentence": "Ieri mattina il dottore andrà a visitare i pazienti del nuovo reparto. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1219", "source": "TC", "sentence": "Domani mattina il dottore andò a visitare i pazienti del nuovo reparto. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1220", "source": "TC", "sentence": "Domani mattina il dottore andrà a visitare i pazienti del nuovo reparto. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1221", "source": "TC", "sentence": "Il dottore domani mattina andò a visitare i pazienti del nuovo reparto. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1222", "source": "TC", "sentence": "Il dottore domani mattina andrà a visitare i pazienti del nuovo reparto. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1223", "source": "TC", "sentence": "Il dottore ieri mattina andrà a visitare i pazienti del nuovo reparto. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1224", "source": "TC", "sentence": "Il dottore ieri mattina andò a visitare i pazienti del nuovo reparto. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1257", "source": "TC", "sentence": "Ieri sera Ligabue presentò il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1258", "source": "TC", "sentence": "Ieri sera Ligabue presenterà il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1259", "source": "TC", "sentence": "Domani sera Ligabue presentò il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1260", "source": "TC", "sentence": "Domani sera Ligabue presenterà il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1261", "source": "TC", "sentence": "Ligabue domani sera presentò il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1262", "source": "TC", "sentence": "Ligabue domani sera presenterà il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1263", "source": "TC", "sentence": "Ligabue ieri sera presenterà il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1264", "source": "TC", "sentence": "Ligabue ieri sera presentò il suo ultimo singolo tratto dal nuovo album. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1305", "source": "TC", "sentence": "Ieri pomeriggio il panettiere sfornò del pane in più da regalare ai senzatetto. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1306", "source": "TC", "sentence": "Ieri pomeriggio il panettiere sfornerà del pane in più da regalare ai senzatetto. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1307", "source": "TC", "sentence": "Domani pomeriggio il panettiere sfornò del pane in più da regalare ai senzatetto. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1308", "source": "TC", "sentence": "Domani pomeriggio il panettiere sfornerà del pane in più da regalare ai senzatetto. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1309", "source": "TC", "sentence": "Il panettiere domani pomeriggio sfornò del pane in più da regalare ai senzatetto. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1310", "source": "TC", "sentence": "Il panettiere domani pomeriggio sfornerà del pane in più da regalare ai senzatetto. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1311", "source": "TC", "sentence": "Il panettiere ieri pomeriggio sfornerà del pane in più da regalare ai senzatetto. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1312", "source": "TC", "sentence": "Il panettiere ieri pomeriggio sfornò del pane in più da regalare ai senzatetto. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1337", "source": "TC", "sentence": "Ieri pomeriggio il geometra progettò il nuovo ponte tra Olbia e Roma. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1338", "source": "TC", "sentence": "Ieri pomeriggio il geometra progetterà il nuovo ponte tra Olbia e Roma. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1339", "source": "TC", "sentence": "Domani pomeriggio il geometra progettò il nuovo ponte tra Olbia e Roma. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1340", "source": "TC", "sentence": "Domani pomeriggio il geometra progetterà il nuovo ponte tra Olbia e Roma. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1341", "source": "TC", "sentence": "Il geometra domani pomeriggio progettò il nuovo ponte tra Olbia e Roma. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1342", "source": "TC", "sentence": "Il geometra domani pomeriggio progetterà il nuovo ponte tra Olbia e Roma. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1343", "source": "TC", "sentence": "Il geometra ieri pomeriggio progetterà il nuovo ponte tra Olbia e Roma. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1344", "source": "TC", "sentence": "Il geometra ieri pomeriggio progettò il nuovo ponte tra Olbia e Roma. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1361", "source": "TC", "sentence": "Ieri mattina la nave salpò da Miami verso i Caraibi carica di turisti. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1362", "source": "TC", "sentence": "Ieri mattina la nave salperà da Miami verso i Caraibi carica di turisti. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1363", "source": "TC", "sentence": "Domani mattina la nave salpò da Miami verso i Caraibi carica di turisti. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1364", "source": "TC", "sentence": "Domani mattina la nave salperà da Miami verso i Caraibi carica di turisti. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1365", "source": "TC", "sentence": "La nave domani mattina salpò da Miami verso i Caraibi carica di turisti. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1366", "source": "TC", "sentence": "La nave domani mattina salperà da Miami verso i Caraibi carica di turisti. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1367", "source": "TC", "sentence": "La nave ieri mattina salperà da Miami verso i Caraibi carica di turisti. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1368", "source": "TC", "sentence": "La nave ieri mattina salpò da Miami verso i Caraibi carica di turisti. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1401", "source": "TC", "sentence": "Ieri mattina il presidente giunse in tribunale per subire la giusta condanna . ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1402", "source": "TC", "sentence": "Ieri mattina il presidente giungerà in tribunale per subire la giusta condanna. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1403", "source": "TC", "sentence": "Domani mattina il presidente giunse in tribunale per subire la giusta condanna. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1404", "source": "TC", "sentence": "Domani mattina il presidente giungerà in tribunale per subire la giusta condanna. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1405", "source": "TC", "sentence": "Il presidente domani mattina giunse in tribunale per subire la giusta condanna. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1406", "source": "TC", "sentence": "Il presidente domani mattina giungerà in tribunale per subire la giusta condanna. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1407", "source": "TC", "sentence": "Il presidente ieri mattina giungerà in tribunale per subire la giusta condanna. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1408", "source": "TC", "sentence": "Il presidente ieri mattina giunse in tribunale per subire la giusta condanna. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1449", "source": "TC", "sentence": "Ieri notte il fumatore andò al distributore per comprare le sigarette. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1450", "source": "TC", "sentence": "Ieri notte il fumatore andrà al distributore per comprare le sigarette. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1451", "source": "TC", "sentence": "Domani notte il fumatore andò al distributore per comprare le sigarette. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1452", "source": "TC", "sentence": "Domani notte il fumatore andrà al distributore per comprare le sigarette. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1453", "source": "TC", "sentence": "Il fumatore domani notte andò al distributore per comprare le sigarette. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1454", "source": "TC", "sentence": "Il fumatore domani notte andrà al distributore per comprare le sigarette. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1455", "source": "TC", "sentence": "Il fumatore ieri notte andrà al distributore per comprare le sigarette. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1456", "source": "TC", "sentence": "Il fumatore ieri notte andò al distributore per comprare le sigarette. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1473", "source": "TC", "sentence": "Ieri pomeriggio il maratoneta corse duramente in vista della gara a New York . ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1474", "source": "TC", "sentence": "Ieri pomeriggio il maratoneta correrà duramente in vista della gara a New York. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1475", "source": "TC", "sentence": "Domani pomeriggio il maratoneta corse duramente in vista della gara a New York. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1476", "source": "TC", "sentence": "Domani pomeriggio il maratoneta correrà duramente in vista della gara a New York. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1477", "source": "TC", "sentence": "Il maratoneta domani pomeriggio corse duramente in vista della gara a New York. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1478", "source": "TC", "sentence": "Il maratoneta domani pomeriggio correrà duramente in vista della gara a New York. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1479", "source": "TC", "sentence": "Il maratoneta ieri pomeriggio correrà duramente in vista della gara a New York. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1480", "source": "TC", "sentence": "Il maratoneta ieri pomeriggio corse duramente in vista della gara a New York. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1513", "source": "TC", "sentence": "Ieri pomeriggio il fantino spazzolò il cavallo per prepararlo alla parata in città. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1514", "source": "TC", "sentence": "Ieri pomeriggio il fantino spazzolerà il cavallo per prepararlo alla parata in città. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1515", "source": "TC", "sentence": "Domani pomeriggio il fantino spazzolò il cavallo per prepararlo alla parata in città. ", "acceptability": 0, "metadata": "initial"}
+{"id": "TC_1516", "source": "TC", "sentence": "Domani pomeriggio il fantino spazzolerà il cavallo per prepararlo alla parata in città. ", "acceptability": 1, "metadata": "initial"}
+{"id": "TC_1517", "source": "TC", "sentence": "Il fantino domani pomeriggio spazzolò il cavallo per prepararlo alla parata in città. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1518", "source": "TC", "sentence": "Il fantino domani pomeriggio spazzolerà il cavallo per prepararlo alla parata in città. ", "acceptability": 1, "metadata": "before"}
+{"id": "TC_1519", "source": "TC", "sentence": "Il fantino ieri pomeriggio spazzolerà il cavallo per prepararlo alla parata in città. ", "acceptability": 0, "metadata": "before"}
+{"id": "TC_1520", "source": "TC", "sentence": "Il fantino ieri pomeriggio spazzolò il cavallo per prepararlo alla parata in città. ", "acceptability": 1, "metadata": "before"}

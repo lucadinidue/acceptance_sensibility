@@ -3,4 +3,5 @@ data/acceptance_datasets/src
 data/representations
 data/results/
 bash_script/
+*/__pycache__/
 cristiano

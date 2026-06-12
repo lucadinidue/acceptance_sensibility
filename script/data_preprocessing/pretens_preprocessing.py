@@ -1,15 +1,18 @@
 import pandas as pd
 import json
 import os
+import re
 
 
 def write_df_to_file(df, out_path):
     with open(out_path, "w", encoding="utf-8") as f:
         for _, row in df.iterrows():
+            text = re.sub(r'\s+([.,;:!?])', r'\1', row["Sentence"])
+            text = re.sub(r"(['’])\s+", r"\1", text)
             record = {
                 "id": f"PT_{row['ID']}",
                 "source": "PT",
-                "sentence": row["Sentence"],
+                "sentence": text,
                 "acceptability": int(row["Labels"]),
                 "metadata": row["Construction"] if "Construction" in df.columns else "NA"
             }

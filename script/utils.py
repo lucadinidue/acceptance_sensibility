@@ -31,7 +31,9 @@ def load_acceptability_labels(dataset_path, ids, is_mask=False):
     return acceptability
 
 
-def plot_scores(df, hue_order, title, ylabel, output_path, score_col="score", dataset_titles=None, sharey=False):
+def plot_scores(df, title, ylabel, output_path, score_col="score", dataset_titles=None, sharey=False):
+    df["model"] = df["model"].str.slice(4, -4)
+    hue_order = sort_model_names(df['model'].unique().tolist())
     dataset_titles = dataset_titles or {}
     dataset_names = sorted(df["dataset"].unique().tolist())
     n_datasets = len(dataset_names)

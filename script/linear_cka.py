@@ -36,29 +36,28 @@ def main():
 
     cka_scores = []
 
-    # with tqdm(total=(len(os.listdir(args.dataset_dir))-1)*len(os.listdir(args.models_dir))) as pbar:
-    #     for dataset_file_name in os.listdir(args.dataset_dir):
-    #         dataset_name = dataset_file_name.split(".")[0]
-    #         if "coherence" in dataset_name:
-    #             continue
-    #         dataset_path = os.path.join(args.dataset_dir, dataset_file_name)
+    with tqdm(total=(len(os.listdir(args.dataset_dir))-1)*len(os.listdir(args.models_dir))) as pbar:
+        for dataset_file_name in os.listdir(args.dataset_dir):
+            dataset_name = dataset_file_name.split(".")[0]
+            if "coherence" in dataset_name:
+                continue
+            dataset_path = os.path.join(args.dataset_dir, dataset_file_name)
 
-    #         for model_name in os.listdir(args.models_dir):
-    #             representations_path = os.path.join(args.representations_dir, f"{dataset_name}_{model_name}.h5")
+            for model_name in os.listdir(args.models_dir):
+                representations_path = os.path.join(args.representations_dir, f"{dataset_name}_{model_name}.h5")
 
-    #             ids, embeddings = load_representations(representations_path, model_name, dataset_name)
-    #             acceptability_labels = load_acceptability_labels(dataset_path, ids)
+                ids, embeddings = load_representations(representations_path, model_name, dataset_name)
+                acceptability_labels = load_acceptability_labels(dataset_path, ids)
 
-    #             scores = compute_cka_per_layer(embeddings, acceptability_labels)
-    #             for layer, score in enumerate(scores):
-    #                 cka_scores.append({"dataset": dataset_name, "model": model_name[4:-4], "layer": layer, "score": score}) #layer/(len(scores)-1)
-    #             pbar.update(1)
+                scores = compute_cka_per_layer(embeddings, acceptability_labels)
+                for layer, score in enumerate(scores):
+                    cka_scores.append({"dataset": dataset_name, "model": model_name, "layer": layer, "score": score}) #layer/(len(scores)-1)
+                pbar.update(1)
     
-    # df = pd.DataFrame(cka_scores)
-    # df.to_csv(os.path.join(args.results_dir, f"cka_training_end.csv"))
-    df = pd.read_csv(os.path.join(args.results_dir, f"cka_training_end.csv"))
-    hue_order = sort_model_names(df['model'].unique().tolist())
-    plot_scores(df, hue_order, title="Linear CKA", ylabel="CKA score", output_path=os.path.join(args.plots_dir, "cka_training_end.svg"))
+    df = pd.DataFrame(cka_scores)
+    df.to_csv(os.path.join(args.results_dir, f"cka_training_end.csv"))
+    # df = pd.read_csv(os.path.join(args.results_dir, f"cka_training_end.csv"))
+    plot_scores(df, title="Linear CKA", ylabel="CKA score", output_path=os.path.join(args.plots_dir, "cka_training_end.svg"))
 
 
 if __name__ == "__main__":
