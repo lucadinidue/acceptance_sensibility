@@ -7,7 +7,7 @@ def write_df_to_file(df, out_path):
     with open(out_path, "w", encoding="utf-8") as f:
         for _, row in df.iterrows():
             record = {
-                "id": f"CO_{row['passage_id']}",
+                "id": f"CO_{row['passage_id']}_{row['label']}",
                 "source": "CO_WIKI",
                 "sentence": row["text"],
                 "acceptability": 1 if row["label"] == "Orig" else 0,
