@@ -1,7 +1,10 @@
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import torch
 import h5py
 import re
 
@@ -75,3 +78,32 @@ def plot_scores(df, title, ylabel, output_path, score_col="score", dataset_title
     fig.tight_layout(rect=[0, 0.08, 1, 0.94])
     fig.savefig(output_path, dpi=220)
     plt.close(fig)
+
+
+@torch.inference_mode()
+def get_last_token_embeddings(model, texts, tokenizer, device, batch_size:int=256, include_embedding_matrix=True):
+    model.eval()
+    all_embs = []
+
+    def collate(batch_texts):
+        return tokenizer(batch_texts, return_tensors="pt", truncation=True, padding=True, max_length=512)
+
+    loader = DataLoader(texts, batch_size=batch_size, shuffle=False, collate_fn=collate)
+    for batch in tqdm(loader):
+        input_ids = batch["input_ids"].to(device)            # (B, L)
+        attention_mask = batch["attention_mask"].to(device)  # (B, L)
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
+        hidden_states = outputs.hidden_states if include_embedding_matrix else outputs.hidden_states[1:]
+        hidden_states = torch.stack(hidden_states, dim=0)        # (num_layers, B, L, H)
+
+        # Taking the last token embedding for each sequence
+        seq_len = attention_mask.size(1)
+        last_idx = attention_mask.sum(dim=1) - 1 # (B,)
+        batch_arange = torch.arange(input_ids.size(0), device=device)   # (B,)
+
+        # Take last token on every layer
+        sent_emb = hidden_states[:, batch_arange, last_idx, :] #  (num_layers, B, H)
+        sent_emb = sent_emb.permute(1, 0, 2).contiguous() #  (B, num_layers, H)
+        all_embs.append(sent_emb.cpu())
+
+    return torch.cat(all_embs, dim=0)                            # (N, num_layers, H)
