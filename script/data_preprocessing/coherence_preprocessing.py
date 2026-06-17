@@ -1,6 +1,30 @@
 import pandas as pd
+import numpy as np
 import json
 import os
+
+
+def subsample_dataset(df):
+    rng = np.random.default_rng(42)
+    df = df.copy()
+
+    df['perturbation_type'] = np.select = np.where(
+        df['label'] == 'Orig', 'orig',
+        np.where(df['label'].str.startswith('sub'), 'sub', 'swap')
+    )
+
+    rows = []
+    for _, group in df.groupby('passage_id', sort=False):
+        orig = group[group['perturbation_type'] == 'orig']
+        rows.append(orig.iloc[0])
+
+        sampled_perturbation = rng.choice(['sub', 'swap'])
+        candidates = group[group['perturbation_type'] == sampled_perturbation]
+        sampled_idx = rng.choice(candidates.index)
+        rows.append(df.loc[sampled_idx])
+
+    result = pd.DataFrame(rows).drop(columns='perturbation_type').reset_index(drop=True)
+    return result
 
 
 def write_df_to_file(df, out_path):
@@ -22,10 +46,12 @@ def main():
     out_dir = "data/acceptance_datasets/"
 
     train_df = pd.read_csv(train_path, sep="\t")
+    train_df = subsample_dataset(train_df)
     train_path = os.path.join(out_dir, "train", "coherence_it.jsonl")
     write_df_to_file(train_df, train_path)
 
     test_df = pd.read_csv(eval_path, sep="\t")
+    test_df = subsample_dataset(test_df)
     test_path = os.path.join(out_dir, "test", "coherence_it.jsonl")
     write_df_to_file(test_df, test_path)
 
