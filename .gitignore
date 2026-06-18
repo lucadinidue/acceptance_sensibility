@@ -2,6 +2,7 @@ models/
 data/acceptance_datasets/src
 data/representations
 data/results/
+bash_script_leonardo/
 bash_script/
 */__pycache__/
 cristiano
