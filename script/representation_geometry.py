@@ -152,7 +152,7 @@ ID_COLUMNS = [
     "ambient_dim",
     "pca_rank_90",
     "pca_rank_95",
-    "participation_ratio",
+    "pca_rank_99",
     "effective_rank",
     "ess_id",
     "twonn_id",
@@ -989,14 +989,6 @@ def pca_rank_for_variance(eigvals: np.ndarray, threshold: float) -> float:
     return float(np.searchsorted(cumulative, threshold, side="left") + 1)
 
 
-def participation_ratio(eigvals: np.ndarray) -> float:
-    total = float(eigvals.sum())
-    denom = float(np.sum(eigvals**2))
-    if total <= EPS or denom <= EPS:
-        return math.nan
-    return float((total**2) / denom)
-
-
 def effective_rank(eigvals: np.ndarray) -> float:
     total = float(eigvals.sum())
     if total <= EPS:
@@ -1102,7 +1094,7 @@ def compute_intrinsic_dimensionality(
         "ambient_dim": int(X.shape[1]) if X.ndim == 2 else 0,
         "pca_rank_90": math.nan,
         "pca_rank_95": math.nan,
-        "participation_ratio": math.nan,
+        "pca_rank_99": math.nan,
         "effective_rank": math.nan,
         "ess_id": math.nan,
         "twonn_id": math.nan,
@@ -1116,7 +1108,7 @@ def compute_intrinsic_dimensionality(
     eigvals = covariance_eigenvalues_centered(Xs)
     result["pca_rank_90"] = pca_rank_for_variance(eigvals, 0.90)
     result["pca_rank_95"] = pca_rank_for_variance(eigvals, 0.95)
-    result["participation_ratio"] = participation_ratio(eigvals)
+    result["pca_rank_99"] = pca_rank_for_variance(eigvals, 0.99)
     result["effective_rank"] = effective_rank(eigvals)
 
     # Centering leaves Euclidean nearest-neighbor distances unchanged, but using
@@ -2241,7 +2233,7 @@ def plot_layer_trajectories(class_df: pd.DataFrame, id_df: pd.DataFrame, plots_d
                 continue
             axes[2].plot(
                 sub["layer_depth"],
-                sub["participation_ratio"],
+                sub["pca_rank_99"],
                 label=subset_name,
                 **subset_styles[subset_name],
             )
@@ -2252,8 +2244,8 @@ def plot_layer_trajectories(class_df: pd.DataFrame, id_df: pd.DataFrame, plots_d
                 **subset_styles[subset_name],
             )
 
-        axes[2].set_title("Participation ratio")
-        style_plain_ax(axes[2], "Relative depth", "ID")
+        axes[2].set_title("PCA 99% rank")
+        style_plain_ax(axes[2], "Relative depth", "Components")
         axes[3].set_title("ESS ID")
         style_plain_ax(axes[3], "Relative depth", "ID")
         for ax in axes:
@@ -2393,10 +2385,10 @@ def plot_model_comparisons(
         id_all = id_df[id_df["subset"] == "all"].copy()
         plot_model_comparison_metric(
             id_all,
-            metric_col="participation_ratio",
-            ylabel="ID",
-            title="Model comparison: participation ratio",
-            output_prefix="geometry_model_comparison_participation_ratio",
+            metric_col="pca_rank_99",
+            ylabel="Components",
+            title="Model comparison: PCA 99% rank",
+            output_prefix="geometry_model_comparison_pca99_rank",
             plots_dir=plots_dir,
         )
         plot_model_comparison_metric(
