@@ -222,6 +222,70 @@ PCA2D_COLUMNS = [
     "n_folds",
 ]
 
+PREFERENCE_DIRECTION_COLUMNS = [
+    "split",
+    "dataset",
+    "source_datasets",
+    "model",
+    "checkpoint",
+    "checkpoint_step",
+    "layer",
+    "layer_depth",
+    "n_total",
+    "n_class_0",
+    "n_class_1",
+    "direction_norm",
+    "score_mean_class_0",
+    "score_mean_class_1",
+    "score_gap",
+    "score_std_class_0",
+    "score_std_class_1",
+    "score_pooled_std",
+    "score_cohens_d",
+    "is_aggregate",
+    "n_folds",
+]
+
+PREFERENCE_MODEL_AGREEMENT_COLUMNS = [
+    "split",
+    "dataset",
+    "source_datasets",
+    "checkpoint",
+    "checkpoint_step",
+    "model_a",
+    "model_b",
+    "layer_a",
+    "layer_b",
+    "layer_depth_a",
+    "layer_depth_b",
+    "n_aligned",
+    "score_pearson",
+    "score_centered_cosine",
+    "is_aggregate",
+    "n_folds",
+]
+
+PREFERENCE_TASK_AGREEMENT_COLUMNS = [
+    "split",
+    "model",
+    "checkpoint",
+    "checkpoint_step",
+    "dataset_a",
+    "dataset_b",
+    "source_datasets_a",
+    "source_datasets_b",
+    "layer",
+    "layer_depth",
+    "direction_cosine",
+    "direction_abs_cosine",
+    "n_total_a",
+    "n_total_b",
+    "is_aggregate_a",
+    "is_aggregate_b",
+    "n_folds_a",
+    "n_folds_b",
+]
+
 
 @dataclass(frozen=True)
 class DatasetSpec:
@@ -353,6 +417,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--force_recompute", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--plot", action="store_true")
+    parser.add_argument(
+        "--preference_only",
+        action="store_true",
+        help="Only compute preference-direction metrics/plots from cached or newly extracted representations.",
+    )
+    parser.add_argument(
+        "--skip_preference",
+        action="store_true",
+        help="Skip preference-direction metrics/plots during the regular pipeline.",
+    )
+    parser.add_argument(
+        "--preference_layers",
+        nargs="*",
+        type=int,
+        default=None,
+        help="Layer indices for preference-direction analysis. Defaults to --layers or all layers.",
+    )
     parser.add_argument(
         "--pca2d_only",
         action="store_true",
@@ -1523,27 +1604,35 @@ def grouped_representation_paths(
     return grouped
 
 
-def load_grouped_representations(paths: Sequence[Tuple[str, Path]]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def load_grouped_representations(paths: Sequence[Tuple[str, Path]]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ids_list = []
     labels_list = []
     embeddings_list = []
     dataset_names = []
     expected_shape = None
 
     for dataset_name, path in paths:
-        _, labels, _, embeddings = load_cached_representations(path)
+        ids, labels, _, embeddings = load_cached_representations(path)
         shape = embeddings.shape[1:]
         if expected_shape is None:
             expected_shape = shape
         elif shape != expected_shape:
             warn(f"Skipping {path}; expected representation shape {expected_shape}, found {shape}.")
             continue
+        ids_list.append(np.asarray([f"{dataset_name}::{id_value}" for id_value in ids], dtype=str))
         labels_list.append(labels)
         embeddings_list.append(embeddings)
         dataset_names.append(dataset_name)
 
     if not embeddings_list:
-        return np.asarray([], dtype=int), np.asarray([], dtype=np.float32), np.asarray([], dtype=str)
+        return (
+            np.asarray([], dtype=str),
+            np.asarray([], dtype=int),
+            np.asarray([], dtype=np.float32),
+            np.asarray([], dtype=str),
+        )
     return (
+        np.concatenate(ids_list, axis=0),
         np.concatenate(labels_list, axis=0),
         np.concatenate(embeddings_list, axis=0),
         np.asarray(dataset_names, dtype=str),
@@ -1572,7 +1661,7 @@ def plot_pca2d_for_representations(
         sorted(grouped_representation_paths(representation_index).items()),
         desc="PCA-2D plots",
     ):
-        labels, embeddings, source_datasets = load_grouped_representations(paths)
+        _, labels, embeddings, source_datasets = load_grouped_representations(paths)
         if len(labels) == 0 or embeddings.size == 0:
             continue
         num_layers = embeddings.shape[1]
@@ -1664,6 +1753,392 @@ def plot_pca2d_for_representations(
         plt.close(fig)
 
     return pd.DataFrame(records)
+
+
+def vector_cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    denom = np.linalg.norm(a) * np.linalg.norm(b)
+    if denom <= EPS:
+        return math.nan
+    return float(np.dot(a, b) / denom)
+
+
+def pearson_correlation(a: np.ndarray, b: np.ndarray) -> float:
+    a = np.asarray(a, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    mask = np.isfinite(a) & np.isfinite(b)
+    if mask.sum() < 2:
+        return math.nan
+    ac = a[mask] - a[mask].mean()
+    bc = b[mask] - b[mask].mean()
+    return vector_cosine_similarity(ac, bc)
+
+
+def preference_direction_stats(
+    X: np.ndarray,
+    labels: np.ndarray,
+) -> Tuple[Dict[str, float], np.ndarray, np.ndarray]:
+    labels = labels.astype(int)
+    X = np.asarray(X, dtype=np.float64)
+    X0 = X[labels == 0]
+    X1 = X[labels == 1]
+    n0 = len(X0)
+    n1 = len(X1)
+    stats = {
+        "n_total": int(len(X)),
+        "n_class_0": int(n0),
+        "n_class_1": int(n1),
+        "direction_norm": math.nan,
+        "score_mean_class_0": math.nan,
+        "score_mean_class_1": math.nan,
+        "score_gap": math.nan,
+        "score_std_class_0": math.nan,
+        "score_std_class_1": math.nan,
+        "score_pooled_std": math.nan,
+        "score_cohens_d": math.nan,
+    }
+    if n0 == 0 or n1 == 0:
+        return stats, np.asarray([], dtype=np.float64), np.full(len(X), math.nan)
+
+    mu0 = X0.mean(axis=0)
+    mu1 = X1.mean(axis=0)
+    direction = mu1 - mu0
+    direction_norm = float(np.linalg.norm(direction))
+    stats["direction_norm"] = direction_norm
+    if direction_norm <= EPS:
+        return stats, np.asarray([], dtype=np.float64), np.full(len(X), math.nan)
+
+    unit_direction = direction / direction_norm
+    # Scores are descriptive projections onto the class-centroid direction.
+    # We center by the pooled centroid so zero is the dataset/model/layer center.
+    scores = (X - X.mean(axis=0, keepdims=True)) @ unit_direction
+    scores0 = scores[labels == 0]
+    scores1 = scores[labels == 1]
+    stats["score_mean_class_0"] = float(scores0.mean())
+    stats["score_mean_class_1"] = float(scores1.mean())
+    stats["score_gap"] = float(scores1.mean() - scores0.mean())
+    stats["score_std_class_0"] = float(scores0.std(ddof=1)) if n0 > 1 else math.nan
+    stats["score_std_class_1"] = float(scores1.std(ddof=1)) if n1 > 1 else math.nan
+
+    if n0 > 1 and n1 > 1:
+        pooled_var = (
+            (n0 - 1) * (stats["score_std_class_0"] ** 2)
+            + (n1 - 1) * (stats["score_std_class_1"] ** 2)
+        ) / max(n0 + n1 - 2, 1)
+        pooled_std = math.sqrt(max(pooled_var, 0.0))
+        stats["score_pooled_std"] = pooled_std
+        if pooled_std > EPS:
+            stats["score_cohens_d"] = float(stats["score_gap"] / pooled_std)
+
+    return stats, unit_direction.astype(np.float32), scores.astype(np.float32)
+
+
+def compute_preference_direction_analysis(
+    representation_index: Dict[Tuple[str, str, str], Path],
+    dataset_specs: Sequence[DatasetSpec],
+    requested_layers_arg: Optional[Sequence[int]],
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    split_by_dataset = {spec.name: spec.split for spec in dataset_specs}
+    direction_records = []
+    score_index = {}
+    direction_index = {}
+
+    for (dataset, model, checkpoint), paths in tqdm(
+        sorted(grouped_representation_paths(representation_index).items()),
+        desc="Preference directions",
+    ):
+        ids, labels, embeddings, source_datasets = load_grouped_representations(paths)
+        if len(labels) == 0 or embeddings.size == 0:
+            continue
+        num_layers = embeddings.shape[1]
+        layers = selected_layers(num_layers, requested_layers_arg)
+        source_list = sorted(str(value) for value in source_datasets.tolist())
+        split_values = sorted({split_by_dataset.get(name, "test") for name in source_list})
+        split = split_values[0] if len(split_values) == 1 else ";".join(split_values)
+        is_aggregate = dataset == "temporal_concord" and len(source_list) > 1
+        n_folds = float(len(source_list)) if is_aggregate else math.nan
+
+        for layer in layers:
+            X = embeddings[:, layer, :]
+            stats, unit_direction, scores = preference_direction_stats(X, labels)
+            base = {
+                "split": split,
+                "dataset": dataset,
+                "source_datasets": ";".join(source_list),
+                "model": model,
+                "checkpoint": checkpoint,
+                "checkpoint_step": checkpoint_step(checkpoint),
+                "layer": layer,
+                "layer_depth": layer_depth(layer, num_layers),
+                "is_aggregate": is_aggregate,
+                "n_folds": n_folds,
+            }
+            direction_records.append({**base, **stats})
+            if len(unit_direction) == 0:
+                continue
+            key = (dataset, model, checkpoint, layer)
+            score_index[key] = {
+                **base,
+                "ids": ids,
+                "labels": labels,
+                "scores": scores,
+            }
+            direction_index[key] = {
+                **base,
+                "unit_direction": unit_direction,
+                "n_total": stats["n_total"],
+            }
+
+    model_agreement_records = []
+    grouped_score_keys = {}
+    for dataset, model, checkpoint, layer in score_index:
+        grouped_score_keys.setdefault((dataset, checkpoint), []).append((model, layer))
+
+    for (dataset, checkpoint), model_layers in tqdm(
+        sorted(grouped_score_keys.items()),
+        desc="Preference model agreement",
+    ):
+        models = sort_names_with_architecture_hint({model for model, _ in model_layers})
+        for model_a, model_b in combinations(models, 2):
+            layers_a = sorted(layer for model, layer in model_layers if model == model_a)
+            layers_b = sorted(layer for model, layer in model_layers if model == model_b)
+            for layer_a in layers_a:
+                entry_a = score_index[(dataset, model_a, checkpoint, layer_a)]
+                for layer_b in layers_b:
+                    entry_b = score_index[(dataset, model_b, checkpoint, layer_b)]
+                    idx_a, idx_b = align_ids(entry_a["ids"], entry_b["ids"])
+                    if len(idx_a) < 2:
+                        continue
+                    scores_a = entry_a["scores"][idx_a]
+                    scores_b = entry_b["scores"][idx_b]
+                    model_agreement_records.append(
+                        {
+                            "split": entry_a["split"],
+                            "dataset": dataset,
+                            "source_datasets": entry_a["source_datasets"],
+                            "checkpoint": checkpoint,
+                            "checkpoint_step": checkpoint_step(checkpoint),
+                            "model_a": model_a,
+                            "model_b": model_b,
+                            "layer_a": layer_a,
+                            "layer_b": layer_b,
+                            "layer_depth_a": entry_a["layer_depth"],
+                            "layer_depth_b": entry_b["layer_depth"],
+                            "n_aligned": int(len(idx_a)),
+                            "score_pearson": pearson_correlation(scores_a, scores_b),
+                            "score_centered_cosine": pearson_correlation(scores_a, scores_b),
+                            "is_aggregate": entry_a["is_aggregate"],
+                            "n_folds": entry_a["n_folds"],
+                        }
+                    )
+
+    task_agreement_records = []
+    grouped_direction_keys = {}
+    for dataset, model, checkpoint, layer in direction_index:
+        grouped_direction_keys.setdefault((model, checkpoint, layer), []).append(dataset)
+
+    for (model, checkpoint, layer), datasets in tqdm(
+        sorted(grouped_direction_keys.items()),
+        desc="Preference task agreement",
+    ):
+        datasets = sorted(set(datasets))
+        if len(datasets) < 2:
+            continue
+        first_entry = direction_index[(datasets[0], model, checkpoint, layer)]
+        for dataset_a, dataset_b in combinations(datasets, 2):
+            entry_a = direction_index[(dataset_a, model, checkpoint, layer)]
+            entry_b = direction_index[(dataset_b, model, checkpoint, layer)]
+            cosine = vector_cosine_similarity(entry_a["unit_direction"], entry_b["unit_direction"])
+            task_agreement_records.append(
+                {
+                    "split": entry_a["split"],
+                    "model": model,
+                    "checkpoint": checkpoint,
+                    "checkpoint_step": checkpoint_step(checkpoint),
+                    "dataset_a": dataset_a,
+                    "dataset_b": dataset_b,
+                    "source_datasets_a": entry_a["source_datasets"],
+                    "source_datasets_b": entry_b["source_datasets"],
+                    "layer": layer,
+                    "layer_depth": first_entry["layer_depth"],
+                    "direction_cosine": cosine,
+                    "direction_abs_cosine": abs(cosine) if np.isfinite(cosine) else math.nan,
+                    "n_total_a": entry_a["n_total"],
+                    "n_total_b": entry_b["n_total"],
+                    "is_aggregate_a": entry_a["is_aggregate"],
+                    "is_aggregate_b": entry_b["is_aggregate"],
+                    "n_folds_a": entry_a["n_folds"],
+                    "n_folds_b": entry_b["n_folds"],
+                }
+            )
+
+    return (
+        pd.DataFrame(direction_records),
+        pd.DataFrame(model_agreement_records),
+        pd.DataFrame(task_agreement_records),
+    )
+
+
+def plot_preference_direction_strength(direction_df: pd.DataFrame, plots_dir: Path) -> None:
+    if direction_df.empty:
+        return
+    pref_dir = plots_dir / "preference_directions"
+    pref_dir.mkdir(parents=True, exist_ok=True)
+    direction_df = drop_temporal_fold_rows(direction_df)
+    if direction_df.empty:
+        return
+
+    for checkpoint, checkpoint_df in direction_df.groupby("checkpoint", dropna=False):
+        dataset_names = sorted(checkpoint_df["dataset"].unique().tolist())
+        models = sort_names_with_architecture_hint(checkpoint_df["model"].unique().tolist())
+        palette = sns.color_palette("tab10", n_colors=len(models))
+        color_map = dict(zip(models, palette))
+
+        fig, axes = plt.subplots(nrows=1, ncols=len(dataset_names), figsize=(5.4 * len(dataset_names), 4.2), sharey=True)
+        axes = [axes] if len(dataset_names) == 1 else list(axes)
+        for ax, dataset in zip(axes, dataset_names):
+            subset = checkpoint_df[checkpoint_df["dataset"] == dataset]
+            for model in models:
+                model_data = subset[subset["model"] == model].sort_values("layer_depth")
+                if model_data.empty:
+                    continue
+                ax.plot(
+                    model_data["layer_depth"],
+                    model_data["score_cohens_d"],
+                    color=color_map[model],
+                    marker="o",
+                    linewidth=1.9,
+                    markersize=3.5,
+                    alpha=0.9,
+                    label=short_model_name(model),
+                )
+            style_plain_ax(ax, "Relative depth", "Direction strength (Cohen d)")
+            ax.set_xlim(-0.02, 1.02)
+            ax.set_title(dataset, fontsize=13)
+
+        handles = [
+            plt.Line2D(
+                [0],
+                [0],
+                color=color_map[model],
+                marker="o",
+                linewidth=1.9,
+                markersize=3.5,
+                label=short_model_name(model),
+            )
+            for model in models
+        ]
+        fig.suptitle(f"Preference direction strength — {checkpoint}", fontsize=16)
+        fig.legend(handles, [handle.get_label() for handle in handles], loc="lower center",
+                   ncol=4, frameon=False, fontsize=9, bbox_to_anchor=(0.5, -0.02))
+        fig.tight_layout(rect=[0, 0.08, 1, 0.94])
+        out = pref_dir / f"geometry_preference_direction_strength_{checkpoint_plot_label(checkpoint)}.svg"
+        fig.savefig(out, dpi=220)
+        plt.close(fig)
+
+
+def plot_preference_model_agreement(model_df: pd.DataFrame, plots_dir: Path) -> None:
+    if model_df.empty:
+        return
+    pref_dir = plots_dir / "preference_directions" / "model_agreement"
+    pref_dir.mkdir(parents=True, exist_ok=True)
+    model_df = drop_temporal_fold_rows(model_df)
+    final_df = model_df[
+        np.isclose(model_df["layer_depth_a"], 1.0)
+        & np.isclose(model_df["layer_depth_b"], 1.0)
+    ].copy()
+    if final_df.empty:
+        return
+
+    for (dataset, checkpoint), subset in final_df.groupby(["dataset", "checkpoint"], dropna=False):
+        models = sort_names_with_architecture_hint(
+            sorted(set(subset["model_a"].unique()).union(set(subset["model_b"].unique())))
+        )
+        labels = [short_model_name(model) for model in models]
+        matrix = pd.DataFrame(np.eye(len(models)), index=labels, columns=labels, dtype=float)
+        for _, row in subset.iterrows():
+            a = short_model_name(row["model_a"])
+            b = short_model_name(row["model_b"])
+            matrix.loc[a, b] = row["score_pearson"]
+            matrix.loc[b, a] = row["score_pearson"]
+
+        fig, ax = plt.subplots(figsize=(7.0, 5.8))
+        sns.heatmap(
+            matrix,
+            ax=ax,
+            cmap="vlag",
+            vmin=-1,
+            vmax=1,
+            center=0,
+            square=True,
+            cbar_kws={"label": "Preference-score correlation"},
+        )
+        ax.set_title(f"Model agreement on preference direction — {dataset} ({checkpoint})", fontsize=13)
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        fig.tight_layout()
+        out = pref_dir / (
+            f"geometry_preference_model_agreement_{safe_name(dataset)}_"
+            f"{checkpoint_plot_label(checkpoint)}.svg"
+        )
+        fig.savefig(out, dpi=220)
+        plt.close(fig)
+
+
+def plot_preference_task_agreement(task_df: pd.DataFrame, plots_dir: Path) -> None:
+    if task_df.empty:
+        return
+    pref_dir = plots_dir / "preference_directions" / "task_agreement"
+    pref_dir.mkdir(parents=True, exist_ok=True)
+    task_df = task_df[
+        ~task_df["dataset_a"].astype(str).str.startswith("temporal_concord_fold_")
+        & ~task_df["dataset_b"].astype(str).str.startswith("temporal_concord_fold_")
+    ].copy()
+    final_df = task_df[np.isclose(task_df["layer_depth"], 1.0)].copy()
+    if final_df.empty:
+        return
+
+    for (model, checkpoint), subset in final_df.groupby(["model", "checkpoint"], dropna=False):
+        datasets = sorted(set(subset["dataset_a"].unique()).union(set(subset["dataset_b"].unique())))
+        matrix = pd.DataFrame(np.eye(len(datasets)), index=datasets, columns=datasets, dtype=float)
+        for _, row in subset.iterrows():
+            matrix.loc[row["dataset_a"], row["dataset_b"]] = row["direction_cosine"]
+            matrix.loc[row["dataset_b"], row["dataset_a"]] = row["direction_cosine"]
+
+        fig, ax = plt.subplots(figsize=(6.4, 5.4))
+        sns.heatmap(
+            matrix,
+            ax=ax,
+            cmap="vlag",
+            vmin=-1,
+            vmax=1,
+            center=0,
+            square=True,
+            cbar_kws={"label": "Direction cosine"},
+        )
+        ax.set_title(
+            f"Task preference-direction agreement — {short_model_name(model)} ({checkpoint})",
+            fontsize=13,
+        )
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        fig.tight_layout()
+        out = pref_dir / (
+            f"geometry_preference_task_agreement_{safe_name(short_model_name(model))}_"
+            f"{checkpoint_plot_label(checkpoint)}.svg"
+        )
+        fig.savefig(out, dpi=220)
+        plt.close(fig)
+
+
+def plot_preference_direction_analysis(
+    direction_df: pd.DataFrame,
+    model_agreement_df: pd.DataFrame,
+    task_agreement_df: pd.DataFrame,
+    plots_dir: Path,
+) -> None:
+    plot_preference_direction_strength(direction_df, plots_dir)
+    plot_preference_model_agreement(model_agreement_df, plots_dir)
+    plot_preference_task_agreement(task_agreement_df, plots_dir)
 
 
 def plot_layer_trajectories(class_df: pd.DataFrame, id_df: pd.DataFrame, plots_dir: Path) -> None:
@@ -1801,6 +2276,149 @@ def plot_layer_trajectories(class_df: pd.DataFrame, id_df: pd.DataFrame, plots_d
         plt.close(fig)
 
 
+def plot_model_comparison_metric(
+    df: pd.DataFrame,
+    metric_col: str,
+    ylabel: str,
+    title: str,
+    output_prefix: str,
+    plots_dir: Path,
+) -> None:
+    if df.empty or metric_col not in df.columns:
+        return
+    df = drop_temporal_fold_rows(df)
+    df = df[np.isfinite(df[metric_col])].copy()
+    if df.empty:
+        return
+
+    comparison_dir = plots_dir / "model_comparison"
+    comparison_dir.mkdir(parents=True, exist_ok=True)
+
+    for checkpoint, checkpoint_df in df.groupby("checkpoint", dropna=False):
+        dataset_names = sorted(checkpoint_df["dataset"].unique().tolist())
+        models = sort_names_with_architecture_hint(checkpoint_df["model"].unique().tolist())
+        if not dataset_names or not models:
+            continue
+
+        palette = sns.color_palette("tab10", n_colors=len(models))
+        color_map = dict(zip(models, palette))
+        fig, axes = plt.subplots(
+            nrows=1,
+            ncols=len(dataset_names),
+            figsize=(5.4 * len(dataset_names), 4.2),
+            sharey=False,
+        )
+        axes = [axes] if len(dataset_names) == 1 else list(axes)
+
+        for ax, dataset in zip(axes, dataset_names):
+            subset = checkpoint_df[checkpoint_df["dataset"] == dataset]
+            for model in models:
+                model_data = subset[subset["model"] == model].sort_values("layer_depth")
+                if model_data.empty:
+                    continue
+                ax.plot(
+                    model_data["layer_depth"],
+                    model_data[metric_col],
+                    color=color_map[model],
+                    marker="o",
+                    linewidth=1.9,
+                    markersize=3.5,
+                    alpha=0.9,
+                    label=short_model_name(model),
+                )
+            style_plain_ax(ax, "Relative depth", ylabel)
+            ax.set_xlim(-0.02, 1.02)
+            ax.set_title(dataset, fontsize=13)
+
+        handles = [
+            plt.Line2D(
+                [0],
+                [0],
+                color=color_map[model],
+                marker="o",
+                linewidth=1.9,
+                markersize=3.5,
+                label=short_model_name(model),
+            )
+            for model in models
+        ]
+        fig.suptitle(f"{title} — {checkpoint}", fontsize=16)
+        fig.legend(
+            handles,
+            [handle.get_label() for handle in handles],
+            loc="lower center",
+            ncol=4,
+            frameon=False,
+            fontsize=9,
+            bbox_to_anchor=(0.5, -0.02),
+        )
+        fig.tight_layout(rect=[0, 0.08, 1, 0.94])
+        out = comparison_dir / f"{output_prefix}_{checkpoint_plot_label(checkpoint)}.svg"
+        fig.savefig(out, dpi=220)
+        plt.close(fig)
+
+
+def plot_model_comparisons(
+    class_df: pd.DataFrame,
+    id_df: pd.DataFrame,
+    plots_dir: Path,
+    preference_df: Optional[pd.DataFrame] = None,
+) -> None:
+    plot_model_comparison_metric(
+        class_df,
+        metric_col="centroid_euclidean",
+        ylabel="Euclidean",
+        title="Model comparison: centroid distance",
+        output_prefix="geometry_model_comparison_centroid_distance",
+        plots_dir=plots_dir,
+    )
+    plot_model_comparison_metric(
+        class_df,
+        metric_col="fisher_ratio",
+        ylabel="Ratio",
+        title="Model comparison: Fisher ratio",
+        output_prefix="geometry_model_comparison_fisher_ratio",
+        plots_dir=plots_dir,
+    )
+    plot_model_comparison_metric(
+        class_df,
+        metric_col="separation_ratio",
+        ylabel="Between / within cosine distance",
+        title="Model comparison: separation ratio",
+        output_prefix="geometry_model_comparison_separation_ratio",
+        plots_dir=plots_dir,
+    )
+
+    if not id_df.empty:
+        id_all = id_df[id_df["subset"] == "all"].copy()
+        plot_model_comparison_metric(
+            id_all,
+            metric_col="participation_ratio",
+            ylabel="ID",
+            title="Model comparison: participation ratio",
+            output_prefix="geometry_model_comparison_participation_ratio",
+            plots_dir=plots_dir,
+        )
+        plot_model_comparison_metric(
+            id_all,
+            metric_col="ess_id",
+            ylabel="ID",
+            title="Model comparison: ESS ID",
+            output_prefix="geometry_model_comparison_ess_id",
+            plots_dir=plots_dir,
+        )
+
+    if preference_df is not None and not preference_df.empty:
+        plot_model_comparison_metric(
+            preference_df,
+            metric_col="score_cohens_d",
+            ylabel="Direction strength (Cohen d)",
+            title="Model comparison: preference direction strength",
+            output_prefix="geometry_model_comparison_preference_direction_strength",
+            plots_dir=plots_dir,
+        )
+
+
 def plot_cka_heatmaps(cka_df: pd.DataFrame, plots_dir: Path) -> None:
     if cka_df.empty:
         return
@@ -1893,7 +2511,7 @@ def plot_checkpoint_drift(drift_df: pd.DataFrame, plots_dir: Path) -> None:
 
 def main() -> None:
     args = parse_args()
-    if args.pca2d_only:
+    if args.pca2d_only or args.preference_only:
         args.plot = True
     np.random.seed(args.seed)
     if torch is not None:
@@ -1917,6 +2535,7 @@ def main() -> None:
         id_df = pd.read_csv(id_path)
         plots_dir.mkdir(parents=True, exist_ok=True)
         plot_layer_trajectories(class_df, id_df, plots_dir)
+        preference_direction_df = None
         if not args.skip_cka:
             cka_path = results_dir / "geometry_cka_cross_model.csv"
             if cka_path.exists():
@@ -1932,6 +2551,25 @@ def main() -> None:
                 plot_checkpoint_drift(drift_df, plots_dir)
             except pd.errors.EmptyDataError:
                 warn(f"Skipping checkpoint drift plots because {drift_path} is empty.")
+        preference_paths = [
+            results_dir / "geometry_preference_directions.csv",
+            results_dir / "geometry_preference_model_agreement.csv",
+            results_dir / "geometry_preference_task_agreement.csv",
+        ]
+        if all(path.exists() for path in preference_paths):
+            try:
+                preference_direction_df = pd.read_csv(preference_paths[0])
+                preference_model_df = pd.read_csv(preference_paths[1])
+                preference_task_df = pd.read_csv(preference_paths[2])
+                plot_preference_direction_analysis(
+                    preference_direction_df,
+                    preference_model_df,
+                    preference_task_df,
+                    plots_dir,
+                )
+            except pd.errors.EmptyDataError:
+                warn("Skipping preference-direction plots because one preference CSV is empty.")
+        plot_model_comparisons(class_df, id_df, plots_dir, preference_direction_df)
         return
 
     dataset_specs = discover_datasets(Path(args.test_dir), args.datasets)
@@ -1959,6 +2597,34 @@ def main() -> None:
         write_csv(pd.DataFrame(), results_dir / "geometry_intrinsic_dimensionality.csv", ID_COLUMNS)
         write_csv(pd.DataFrame(), results_dir / "geometry_cka_cross_model.csv", CKA_COLUMNS)
         write_csv(pd.DataFrame(), results_dir / "geometry_pca2d_variance.csv", PCA2D_COLUMNS)
+        write_csv(pd.DataFrame(), results_dir / "geometry_preference_directions.csv", PREFERENCE_DIRECTION_COLUMNS)
+        write_csv(pd.DataFrame(), results_dir / "geometry_preference_model_agreement.csv", PREFERENCE_MODEL_AGREEMENT_COLUMNS)
+        write_csv(pd.DataFrame(), results_dir / "geometry_preference_task_agreement.csv", PREFERENCE_TASK_AGREEMENT_COLUMNS)
+        return
+
+    if args.preference_only:
+        preference_direction_df, preference_model_df, preference_task_df = compute_preference_direction_analysis(
+            representation_index=representation_index,
+            dataset_specs=dataset_specs,
+            requested_layers_arg=args.preference_layers if args.preference_layers is not None else args.layers,
+        )
+        write_csv(preference_direction_df, results_dir / "geometry_preference_directions.csv", PREFERENCE_DIRECTION_COLUMNS)
+        write_csv(
+            preference_model_df,
+            results_dir / "geometry_preference_model_agreement.csv",
+            PREFERENCE_MODEL_AGREEMENT_COLUMNS,
+        )
+        write_csv(
+            preference_task_df,
+            results_dir / "geometry_preference_task_agreement.csv",
+            PREFERENCE_TASK_AGREEMENT_COLUMNS,
+        )
+        plot_preference_direction_analysis(
+            preference_direction_df,
+            preference_model_df,
+            preference_task_df,
+            plots_dir,
+        )
         return
 
     if args.pca2d_only:
@@ -2000,9 +2666,43 @@ def main() -> None:
         )
         write_csv(drift_df, results_dir / "geometry_checkpoint_drift.csv", DRIFT_COLUMNS)
 
+    preference_direction_df = pd.DataFrame()
+    preference_model_df = pd.DataFrame()
+    preference_task_df = pd.DataFrame()
+    if not args.skip_preference:
+        preference_direction_df, preference_model_df, preference_task_df = compute_preference_direction_analysis(
+            representation_index=representation_index,
+            dataset_specs=dataset_specs,
+            requested_layers_arg=args.preference_layers if args.preference_layers is not None else args.layers,
+        )
+        write_csv(preference_direction_df, results_dir / "geometry_preference_directions.csv", PREFERENCE_DIRECTION_COLUMNS)
+        write_csv(
+            preference_model_df,
+            results_dir / "geometry_preference_model_agreement.csv",
+            PREFERENCE_MODEL_AGREEMENT_COLUMNS,
+        )
+        write_csv(
+            preference_task_df,
+            results_dir / "geometry_preference_task_agreement.csv",
+            PREFERENCE_TASK_AGREEMENT_COLUMNS,
+        )
+
     if args.plot:
         plot_layer_trajectories(class_df, id_df, plots_dir)
+        plot_model_comparisons(
+            class_df,
+            id_df,
+            plots_dir,
+            preference_direction_df if not args.skip_preference else None,
+        )
         plot_cka_heatmaps(cka_df, plots_dir)
+        if not args.skip_preference:
+            plot_preference_direction_analysis(
+                preference_direction_df,
+                preference_model_df,
+                preference_task_df,
+                plots_dir,
+            )
         if not args.skip_pca2d:
             pca2d_df = plot_pca2d_for_representations(
                 representation_index=representation_index,
