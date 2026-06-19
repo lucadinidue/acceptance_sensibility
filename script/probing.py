@@ -191,15 +191,15 @@ def main():
                         "f1": r["f1"],
                     })
 
-
-        fold_df = pd.DataFrame(fold_records)
-        agg = fold_df.groupby(["checkpoint", "dataset", "model", "layer", "category"]).agg(
-            accuracy=("accuracy", "mean"),
-            accuracy_std=("accuracy", "std"),
-            f1=("f1", "mean"),
-            f1_std=("f1", "std"),
-        ).reset_index()
-        records.extend(agg.to_dict("records"))
+        if fold_records:
+            fold_df = pd.DataFrame(fold_records)
+            agg = fold_df.groupby(["checkpoint", "dataset", "model", "layer", "category"]).agg(
+                accuracy=("accuracy", "mean"),
+                accuracy_std=("accuracy", "std"),
+                f1=("f1", "mean"),
+                f1_std=("f1", "std"),
+            ).reset_index()
+            records.extend(agg.to_dict("records"))
 
         del model
         torch.cuda.empty_cache()
