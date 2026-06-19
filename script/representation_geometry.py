@@ -325,6 +325,49 @@ KNN_AGREEMENT_COLUMNS = [
     "n_folds",
 ]
 
+LOCAL_DIRECTION_COLUMNS = [
+    "split",
+    "dataset",
+    "fold",
+    "source_datasets_train",
+    "source_datasets_test",
+    "model",
+    "checkpoint",
+    "checkpoint_step",
+    "layer",
+    "layer_depth",
+    "n_train",
+    "n_test",
+    "n_eval",
+    "n_valid",
+    "k",
+    "k_effective",
+    "min_class_count",
+    "coverage",
+    "global_direction_norm",
+    "global_train_cohens_d",
+    "global_direction_accuracy",
+    "global_direction_accuracy_class_0",
+    "global_direction_accuracy_class_1",
+    "local_direction_accuracy",
+    "local_direction_accuracy_class_0",
+    "local_direction_accuracy_class_1",
+    "local_majority_accuracy",
+    "local_majority_accuracy_class_0",
+    "local_majority_accuracy_class_1",
+    "local_minus_global_accuracy",
+    "local_minus_majority_accuracy",
+    "mean_local_direction_norm",
+    "mean_local_cohens_d",
+    "median_local_cohens_d",
+    "mean_local_cosine_to_global",
+    "mean_local_abs_cosine_to_global",
+    "mean_neighbor_class_0",
+    "mean_neighbor_class_1",
+    "is_aggregate",
+    "n_folds",
+]
+
 
 @dataclass(frozen=True)
 class DatasetSpec:
@@ -484,10 +527,41 @@ def parse_args() -> argparse.Namespace:
         help="Only compute kNN neighborhood-agreement metrics/plots from cached or newly extracted representations.",
     )
     parser.add_argument(
+        "--local_directions",
+        action="store_true",
+        help=(
+            "Compute local train-neighborhood class directions and compare them "
+            "with the global centroid direction."
+        ),
+    )
+    parser.add_argument(
+        "--local_directions_only",
+        action="store_true",
+        help="Only compute local-direction metrics/plots from cached or newly extracted train/test representations.",
+    )
+    parser.add_argument(
         "--knn_neighbors",
         type=int,
         default=KNN_NEIGHBORS,
         help="Number of same-class nearest neighbors for neighborhood-agreement analysis.",
+    )
+    parser.add_argument(
+        "--local_k_neighbors",
+        type=int,
+        default=50,
+        help="Number of train neighbors used to estimate each local class direction.",
+    )
+    parser.add_argument(
+        "--local_min_class_count",
+        type=int,
+        default=5,
+        help="Minimum neighbors from each class required to score a local direction.",
+    )
+    parser.add_argument(
+        "--local_max_eval_samples",
+        type=int,
+        default=None,
+        help="Optional stratified test subsample for local-direction diagnostics.",
     )
     parser.add_argument(
         "--skip_pca2d",
@@ -1626,6 +1700,276 @@ def compute_knn_neighborhood_agreement(
             "distance_metric",
         ],
         count_cols=["n_aligned", "n_items"],
+    )
+
+
+def accuracy_for_label(predictions: np.ndarray, labels: np.ndarray, label: int) -> float:
+    mask = labels == label
+    if not np.any(mask):
+        return math.nan
+    return float((predictions[mask] == labels[mask]).mean())
+
+
+def projection_cohens_d(X: np.ndarray, labels: np.ndarray, unit_direction: np.ndarray) -> float:
+    labels = labels.astype(int)
+    X0 = X[labels == 0]
+    X1 = X[labels == 1]
+    if len(X0) < 2 or len(X1) < 2:
+        return math.nan
+    scores = X @ unit_direction
+    scores0 = scores[labels == 0]
+    scores1 = scores[labels == 1]
+    pooled_var = (
+        (len(scores0) - 1) * scores0.var(ddof=1)
+        + (len(scores1) - 1) * scores1.var(ddof=1)
+    ) / max(len(scores0) + len(scores1) - 2, 1)
+    pooled_std = math.sqrt(max(float(pooled_var), 0.0))
+    if pooled_std <= EPS:
+        return math.nan
+    return float((scores1.mean() - scores0.mean()) / pooled_std)
+
+
+def local_direction_diagnostic(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    k: int,
+    min_class_count: int,
+    max_eval_samples: Optional[int],
+    seed: int,
+) -> Dict[str, float]:
+    """Estimate local class directions from train neighbors and score test points.
+
+    This is not a trained classifier: every local axis is the difference between
+    grammatical and ungrammatical centroids inside the k nearest train neighbors.
+    If these local axes work while the global centroid axis fails, the task has
+    local separation directions that are not globally aligned.
+    """
+    y_train = np.asarray(y_train, dtype=int)
+    y_test = np.asarray(y_test, dtype=int)
+    X_train = np.asarray(X_train, dtype=np.float64)
+    X_test = np.asarray(X_test, dtype=np.float64)
+    eval_idx = stratified_sample_indices(y_test, max_eval_samples, seed)
+    X_eval = X_test[eval_idx]
+    y_eval = y_test[eval_idx]
+    k_effective = min(int(k), len(X_train))
+
+    result = {
+        "n_train": int(len(y_train)),
+        "n_test": int(len(y_test)),
+        "n_eval": int(len(y_eval)),
+        "n_valid": 0,
+        "k": int(k),
+        "k_effective": int(k_effective),
+        "min_class_count": int(min_class_count),
+        "coverage": math.nan,
+        "global_direction_norm": math.nan,
+        "global_train_cohens_d": math.nan,
+        "global_direction_accuracy": math.nan,
+        "global_direction_accuracy_class_0": math.nan,
+        "global_direction_accuracy_class_1": math.nan,
+        "local_direction_accuracy": math.nan,
+        "local_direction_accuracy_class_0": math.nan,
+        "local_direction_accuracy_class_1": math.nan,
+        "local_majority_accuracy": math.nan,
+        "local_majority_accuracy_class_0": math.nan,
+        "local_majority_accuracy_class_1": math.nan,
+        "local_minus_global_accuracy": math.nan,
+        "local_minus_majority_accuracy": math.nan,
+        "mean_local_direction_norm": math.nan,
+        "mean_local_cohens_d": math.nan,
+        "median_local_cohens_d": math.nan,
+        "mean_local_cosine_to_global": math.nan,
+        "mean_local_abs_cosine_to_global": math.nan,
+        "mean_neighbor_class_0": math.nan,
+        "mean_neighbor_class_1": math.nan,
+    }
+
+    if len(X_train) < 2 or len(X_eval) == 0 or k_effective < 2:
+        return result
+
+    global_stats, global_direction, _ = preference_direction_stats(X_train, y_train)
+    result["global_direction_norm"] = global_stats["direction_norm"]
+    result["global_train_cohens_d"] = global_stats["score_cohens_d"]
+
+    global_predictions = np.full(len(y_eval), -1, dtype=int)
+    if len(global_direction) > 0:
+        global_center = X_train.mean(axis=0, keepdims=True)
+        global_scores = (X_eval - global_center) @ global_direction.astype(np.float64)
+        global_predictions = (global_scores > 0).astype(int)
+        result["global_direction_accuracy"] = float((global_predictions == y_eval).mean())
+        result["global_direction_accuracy_class_0"] = accuracy_for_label(global_predictions, y_eval, 0)
+        result["global_direction_accuracy_class_1"] = accuracy_for_label(global_predictions, y_eval, 1)
+
+    try:
+        neighbor_model = NearestNeighbors(n_neighbors=k_effective, metric=KNN_METRIC)
+        neighbor_model.fit(X_train)
+        neighbor_indices = neighbor_model.kneighbors(X_eval, return_distance=False)
+    except Exception as exc:
+        warn(f"Local direction kNN failed: {exc}")
+        return result
+
+    local_predictions = []
+    majority_predictions = []
+    valid_labels = []
+    local_norms = []
+    local_cohens = []
+    local_cosines = []
+    local_abs_cosines = []
+    counts0 = []
+    counts1 = []
+    global_unit = global_direction.astype(np.float64) if len(global_direction) > 0 else np.asarray([], dtype=np.float64)
+
+    for test_i, neighbors in enumerate(neighbor_indices):
+        neighbor_labels = y_train[neighbors]
+        n0 = int((neighbor_labels == 0).sum())
+        n1 = int((neighbor_labels == 1).sum())
+        if n0 < min_class_count or n1 < min_class_count:
+            continue
+
+        X_neighbors = X_train[neighbors]
+        mu0 = X_neighbors[neighbor_labels == 0].mean(axis=0)
+        mu1 = X_neighbors[neighbor_labels == 1].mean(axis=0)
+        local_direction = mu1 - mu0
+        local_norm = float(np.linalg.norm(local_direction))
+        if local_norm <= EPS:
+            continue
+        local_unit = local_direction / local_norm
+        local_center = X_neighbors.mean(axis=0, keepdims=True)
+        local_score = float((X_eval[test_i] - local_center) @ local_unit)
+
+        local_predictions.append(1 if local_score > 0 else 0)
+        majority_predictions.append(1 if n1 >= n0 else 0)
+        valid_labels.append(int(y_eval[test_i]))
+        local_norms.append(local_norm)
+        local_cohens.append(projection_cohens_d(X_neighbors, neighbor_labels, local_unit))
+        counts0.append(n0)
+        counts1.append(n1)
+        if len(global_unit) > 0:
+            cosine = vector_cosine_similarity(local_unit, global_unit)
+            if np.isfinite(cosine):
+                local_cosines.append(cosine)
+                local_abs_cosines.append(abs(cosine))
+
+    if not valid_labels:
+        result["coverage"] = 0.0
+        return result
+
+    valid_labels = np.asarray(valid_labels, dtype=int)
+    local_predictions = np.asarray(local_predictions, dtype=int)
+    majority_predictions = np.asarray(majority_predictions, dtype=int)
+    result["n_valid"] = int(len(valid_labels))
+    result["coverage"] = float(len(valid_labels) / max(len(y_eval), 1))
+    result["local_direction_accuracy"] = float((local_predictions == valid_labels).mean())
+    result["local_direction_accuracy_class_0"] = accuracy_for_label(local_predictions, valid_labels, 0)
+    result["local_direction_accuracy_class_1"] = accuracy_for_label(local_predictions, valid_labels, 1)
+    result["local_majority_accuracy"] = float((majority_predictions == valid_labels).mean())
+    result["local_majority_accuracy_class_0"] = accuracy_for_label(majority_predictions, valid_labels, 0)
+    result["local_majority_accuracy_class_1"] = accuracy_for_label(majority_predictions, valid_labels, 1)
+    if np.isfinite(result["global_direction_accuracy"]):
+        result["local_minus_global_accuracy"] = (
+            result["local_direction_accuracy"] - result["global_direction_accuracy"]
+        )
+    result["local_minus_majority_accuracy"] = (
+        result["local_direction_accuracy"] - result["local_majority_accuracy"]
+    )
+    result["mean_local_direction_norm"] = float(np.mean(local_norms)) if local_norms else math.nan
+    finite_cohens = [value for value in local_cohens if np.isfinite(value)]
+    result["mean_local_cohens_d"] = float(np.mean(finite_cohens)) if finite_cohens else math.nan
+    result["median_local_cohens_d"] = float(np.median(finite_cohens)) if finite_cohens else math.nan
+    result["mean_local_cosine_to_global"] = float(np.mean(local_cosines)) if local_cosines else math.nan
+    result["mean_local_abs_cosine_to_global"] = float(np.mean(local_abs_cosines)) if local_abs_cosines else math.nan
+    result["mean_neighbor_class_0"] = float(np.mean(counts0)) if counts0 else math.nan
+    result["mean_neighbor_class_1"] = float(np.mean(counts1)) if counts1 else math.nan
+    return result
+
+
+def train_dataset_specs_for_local_directions(train_dir: Path, requested: Optional[Sequence[str]]) -> List[DatasetSpec]:
+    return [
+        DatasetSpec(name=spec.name, path=spec.path, split="train")
+        for spec in discover_datasets(train_dir, requested)
+    ]
+
+
+def compute_local_direction_analysis(
+    train_index: Dict[Tuple[str, str, str], Path],
+    test_index: Dict[Tuple[str, str, str], Path],
+    requested_layers_arg: Optional[Sequence[int]],
+    local_k_neighbors: int,
+    local_min_class_count: int,
+    local_max_eval_samples: Optional[int],
+    seed: int,
+) -> pd.DataFrame:
+    records = []
+    train_groups = grouped_representation_paths(train_index)
+    test_groups = grouped_representation_paths(test_index)
+    shared_keys = sorted(set(train_groups).intersection(test_groups))
+
+    for dataset, model, checkpoint in tqdm(shared_keys, desc="Local directions"):
+        train_ids, train_labels, train_embeddings, train_sources = load_grouped_representations(
+            train_groups[(dataset, model, checkpoint)]
+        )
+        test_ids, test_labels, test_embeddings, test_sources = load_grouped_representations(
+            test_groups[(dataset, model, checkpoint)]
+        )
+        if len(train_labels) == 0 or len(test_labels) == 0:
+            continue
+        if train_embeddings.shape[2] != test_embeddings.shape[2]:
+            warn(f"Skipping local directions for {dataset}/{model}/{checkpoint}: hidden sizes differ.")
+            continue
+
+        num_layers = min(train_embeddings.shape[1], test_embeddings.shape[1])
+        layers = selected_layers(num_layers, requested_layers_arg)
+        train_source_list = sorted(str(value) for value in train_sources.tolist())
+        test_source_list = sorted(str(value) for value in test_sources.tolist())
+        is_aggregate = dataset == "temporal_concord" and len(test_source_list) > 1
+        n_folds = float(len(test_source_list)) if is_aggregate else math.nan
+
+        for layer in layers:
+            stats = local_direction_diagnostic(
+                X_train=train_embeddings[:, layer, :],
+                y_train=train_labels,
+                X_test=test_embeddings[:, layer, :],
+                y_test=test_labels,
+                k=local_k_neighbors,
+                min_class_count=local_min_class_count,
+                max_eval_samples=local_max_eval_samples,
+                seed=stable_seed(dataset, model, checkpoint, layer, "local", base_seed=seed),
+            )
+            records.append(
+                {
+                    "split": "train->test",
+                    "dataset": dataset,
+                    "fold": temporal_fold_number(dataset),
+                    "source_datasets_train": ";".join(train_source_list),
+                    "source_datasets_test": ";".join(test_source_list),
+                    "model": model,
+                    "checkpoint": checkpoint,
+                    "checkpoint_step": checkpoint_step(checkpoint),
+                    "layer": layer,
+                    "layer_depth": layer_depth(layer, num_layers),
+                    "is_aggregate": is_aggregate,
+                    "n_folds": n_folds,
+                    **stats,
+                }
+            )
+
+    local_df = pd.DataFrame(records)
+    return add_temporal_fold_aggregates(
+        local_df,
+        group_cols=[
+            "split",
+            "model",
+            "checkpoint",
+            "checkpoint_step",
+            "layer",
+            "layer_depth",
+            "k",
+            "k_effective",
+            "min_class_count",
+        ],
+        count_cols=["n_train", "n_test", "n_eval", "n_valid"],
     )
 
 
@@ -2898,6 +3242,130 @@ def plot_knn_neighborhood_agreement(knn_df: pd.DataFrame, plots_dir: Path) -> No
     plot_knn_pair_heatmaps(knn_df, plots_dir)
 
 
+def plot_local_direction_analysis(local_df: pd.DataFrame, plots_dir: Path) -> None:
+    if local_df.empty:
+        return
+    local_df = drop_temporal_fold_rows(local_df)
+    if local_df.empty:
+        return
+
+    out_dir = plots_dir / "local_directions"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    palette = sns.color_palette("tab10", n_colors=4)
+    metric_styles = {
+        "global_direction_accuracy": {"label": "global direction", "color": palette[0], "marker": "o"},
+        "local_direction_accuracy": {"label": "local direction", "color": palette[1], "marker": "s"},
+        "local_majority_accuracy": {"label": "local majority", "color": palette[2], "marker": "^"},
+    }
+
+    for (dataset, checkpoint), subset in local_df.groupby(["dataset", "checkpoint"], dropna=False):
+        subset = subset.copy()
+        subset["layer_depth_bin"] = subset["layer_depth"].round(2)
+        summary = (
+            subset.groupby("layer_depth_bin", dropna=False)
+            .agg(
+                global_direction_accuracy=("global_direction_accuracy", "mean"),
+                local_direction_accuracy=("local_direction_accuracy", "mean"),
+                local_majority_accuracy=("local_majority_accuracy", "mean"),
+                mean_local_cohens_d=("mean_local_cohens_d", "mean"),
+                mean_local_abs_cosine_to_global=("mean_local_abs_cosine_to_global", "mean"),
+                coverage=("coverage", "mean"),
+            )
+            .reset_index()
+            .sort_values("layer_depth_bin")
+        )
+        if summary.empty:
+            continue
+
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15.8, 4.3))
+
+        for metric, style in metric_styles.items():
+            axes[0].plot(
+                summary["layer_depth_bin"],
+                summary[metric],
+                color=style["color"],
+                marker=style["marker"],
+                linewidth=1.9,
+                markersize=3.8,
+                alpha=0.92,
+                label=style["label"],
+            )
+        axes[0].axhline(0.5, color="0.35", linestyle=":", linewidth=1.0, alpha=0.8)
+        axes[0].set_ylim(0.0, 1.02)
+        axes[0].set_xlim(-0.02, 1.02)
+        axes[0].set_title("Held-out correctness", fontsize=13)
+        style_plain_ax(axes[0], "Relative depth", "Correct fraction")
+
+        axes[1].plot(
+            summary["layer_depth_bin"],
+            summary["mean_local_cohens_d"],
+            color=palette[3],
+            marker="o",
+            linewidth=1.9,
+            markersize=3.8,
+            alpha=0.92,
+        )
+        axes[1].set_xlim(-0.02, 1.02)
+        axes[1].set_title("Local separation strength", fontsize=13)
+        style_plain_ax(axes[1], "Relative depth", "Mean local Cohen d")
+
+        axes[2].plot(
+            summary["layer_depth_bin"],
+            summary["mean_local_abs_cosine_to_global"],
+            color=palette[1],
+            marker="o",
+            linewidth=1.9,
+            markersize=3.8,
+            alpha=0.92,
+        )
+        axes[2].plot(
+            summary["layer_depth_bin"],
+            summary["coverage"],
+            color="0.35",
+            marker="s",
+            linewidth=1.5,
+            markersize=3.5,
+            alpha=0.75,
+            label="coverage",
+        )
+        axes[2].set_ylim(0.0, 1.02)
+        axes[2].set_xlim(-0.02, 1.02)
+        axes[2].set_title("Local/global alignment", fontsize=13)
+        style_plain_ax(axes[2], "Relative depth", "|cos(local, global)|")
+
+        handles0, labels0 = axes[0].get_legend_handles_labels()
+        handles2, labels2 = axes[2].get_legend_handles_labels()
+        fig.suptitle(
+            f"Local class directions — {dataset} ({checkpoint})",
+            fontsize=16,
+        )
+        fig.legend(
+            handles0 + handles2,
+            labels0 + labels2,
+            loc="lower center",
+            ncol=4,
+            frameon=False,
+            fontsize=9,
+            bbox_to_anchor=(0.5, -0.02),
+        )
+        fig.tight_layout(rect=[0, 0.08, 1, 0.93])
+        out = out_dir / (
+            f"geometry_local_directions_{safe_name(dataset)}_"
+            f"{checkpoint_plot_label(checkpoint)}.svg"
+        )
+        fig.savefig(out, dpi=220)
+        plt.close(fig)
+
+    plot_model_comparison_metric(
+        local_df,
+        metric_col="local_direction_accuracy",
+        ylabel="Local direction correct fraction",
+        title="Model comparison: local direction correctness",
+        output_prefix="geometry_model_comparison_local_direction_accuracy",
+        plots_dir=plots_dir,
+    )
+
+
 def plot_cka_heatmaps(cka_df: pd.DataFrame, plots_dir: Path) -> None:
     if cka_df.empty:
         return
@@ -2988,9 +3456,28 @@ def plot_checkpoint_drift(drift_df: pd.DataFrame, plots_dir: Path) -> None:
         plt.close(fig)
 
 
+def ensure_train_representations_for_local_directions(
+    args: argparse.Namespace,
+    model_names: Sequence[str],
+    checkpoint_labels: Sequence[str],
+) -> Dict[Tuple[str, str, str], Path]:
+    train_specs = train_dataset_specs_for_local_directions(Path(args.train_dir), args.datasets)
+    train_datasets = {
+        spec.name: load_dataset(spec, max_samples=args.max_samples, seed=args.seed)
+        for spec in train_specs
+    }
+    return ensure_representation_caches(
+        args=args,
+        model_names=model_names,
+        checkpoint_labels=checkpoint_labels,
+        dataset_specs=train_specs,
+        datasets=train_datasets,
+    )
+
+
 def main() -> None:
     args = parse_args()
-    if args.pca2d_only or args.preference_only or args.neighborhood_only:
+    if args.pca2d_only or args.preference_only or args.neighborhood_only or args.local_directions_only:
         args.plot = True
     np.random.seed(args.seed)
     if torch is not None:
@@ -3056,6 +3543,13 @@ def main() -> None:
                 plot_knn_neighborhood_agreement(knn_df, plots_dir)
             except pd.errors.EmptyDataError:
                 warn(f"Skipping kNN neighborhood plots because {knn_path} is empty.")
+        local_path = results_dir / "geometry_local_directions.csv"
+        if local_path.exists():
+            try:
+                local_df = pd.read_csv(local_path)
+                plot_local_direction_analysis(local_df, plots_dir)
+            except pd.errors.EmptyDataError:
+                warn(f"Skipping local-direction plots because {local_path} is empty.")
         return
 
     dataset_specs = discover_datasets(Path(args.test_dir), args.datasets)
@@ -3087,6 +3581,30 @@ def main() -> None:
         write_csv(pd.DataFrame(), results_dir / "geometry_preference_model_agreement.csv", PREFERENCE_MODEL_AGREEMENT_COLUMNS)
         write_csv(pd.DataFrame(), results_dir / "geometry_preference_task_agreement.csv", PREFERENCE_TASK_AGREEMENT_COLUMNS)
         write_csv(pd.DataFrame(), results_dir / "geometry_knn_neighborhood_agreement.csv", KNN_AGREEMENT_COLUMNS)
+        write_csv(pd.DataFrame(), results_dir / "geometry_local_directions.csv", LOCAL_DIRECTION_COLUMNS)
+        return
+
+    if args.local_directions_only:
+        train_index = ensure_train_representations_for_local_directions(
+            args=args,
+            model_names=model_names,
+            checkpoint_labels=checkpoint_labels,
+        )
+        if not train_index:
+            warn("No train representation caches are available for local-direction analysis.")
+            local_df = pd.DataFrame()
+        else:
+            local_df = compute_local_direction_analysis(
+                train_index=train_index,
+                test_index=representation_index,
+                requested_layers_arg=args.layers,
+                local_k_neighbors=args.local_k_neighbors,
+                local_min_class_count=args.local_min_class_count,
+                local_max_eval_samples=args.local_max_eval_samples,
+                seed=args.seed,
+            )
+        write_csv(local_df, results_dir / "geometry_local_directions.csv", LOCAL_DIRECTION_COLUMNS)
+        plot_local_direction_analysis(local_df, plots_dir)
         return
 
     if args.neighborhood_only:
@@ -3184,6 +3702,27 @@ def main() -> None:
             PREFERENCE_TASK_AGREEMENT_COLUMNS,
         )
 
+    local_df = pd.DataFrame()
+    if args.local_directions:
+        train_index = ensure_train_representations_for_local_directions(
+            args=args,
+            model_names=model_names,
+            checkpoint_labels=checkpoint_labels,
+        )
+        if train_index:
+            local_df = compute_local_direction_analysis(
+                train_index=train_index,
+                test_index=representation_index,
+                requested_layers_arg=args.layers,
+                local_k_neighbors=args.local_k_neighbors,
+                local_min_class_count=args.local_min_class_count,
+                local_max_eval_samples=args.local_max_eval_samples,
+                seed=args.seed,
+            )
+        else:
+            warn("No train representation caches are available for local-direction analysis.")
+        write_csv(local_df, results_dir / "geometry_local_directions.csv", LOCAL_DIRECTION_COLUMNS)
+
     if args.plot:
         plot_layer_trajectories(class_df, id_df, plots_dir)
         plot_model_comparisons(
@@ -3213,6 +3752,8 @@ def main() -> None:
             write_csv(pca2d_df, results_dir / "geometry_pca2d_variance.csv", PCA2D_COLUMNS)
         if not drift_df.empty:
             plot_checkpoint_drift(drift_df, plots_dir)
+        if args.local_directions:
+            plot_local_direction_analysis(local_df, plots_dir)
 
 
 if __name__ == "__main__":
