@@ -93,6 +93,8 @@ def plot_checkpoint_scores(df, model_name, output_path):
         axes = [axes]
 
     for ax, dataset_name in zip(axes, dataset_names):
+        if "coherence" not in dataset_name:
+            continue
         subset = df[df["dataset"] == dataset_name]
 
         for layer in sorted(subset["layer"].unique()):
