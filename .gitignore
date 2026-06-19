@@ -1,6 +1,8 @@
 models/
 data/acceptance_datasets/src
 data/representations
+data/representations_geometry/
+data/representations_architecture_effects/
 data/results/
 bash_script_leonardo/
 bash_script/
