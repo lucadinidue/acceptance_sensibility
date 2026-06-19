@@ -12,8 +12,13 @@ from utils import sort_model_names
 STEPS_PER_EPOCH = 19725 / 3
 
 
+# def _checkpoint_fmt(x, _):
+#     return f"{x / 1000:.0f}k"
+
 def _checkpoint_fmt(x, _):
-    return f"{x / 1000:.0f}k"
+    if x >= 1000:
+        return f"{x/1000:g}k"
+    return f"{int(x)}"
 
 
 def _style_checkpoint_ax(ax, ylabel):
@@ -52,7 +57,7 @@ def _metric_info(metric):
 def plot_last_layer_global(df, metric, plots_dir):
     val_col, std_col, ylabel, suffix = _metric_info(metric)
 
-    df = df[df["layer"] == df["layer"].max()]
+    df = df[df["layer"] == df.groupby("model")["layer"].transform("max")]
     df = df[df["category"] == "all"]
 
     dataset_names = sorted(df["dataset"].unique().tolist())
