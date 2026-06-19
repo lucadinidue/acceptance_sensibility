@@ -106,6 +106,16 @@ ID_MAX_SAMPLES = 5000
 ESS_MAX_SAMPLES = 60
 ESS_N_NEIGHBORS = 10
 PCA2D_MAX_SAMPLES = 1500
+KNN_NEIGHBORS = 10
+KNN_METRIC = "cosine"
+CLASS_SUBSET_LABELS = {
+    "class_0": "ungrammatical",
+    "class_1": "grammatical",
+}
+CLASS_SUBSET_STYLES = {
+    "class_0": {"linestyle": "--", "marker": "s", "alpha": 0.85},
+    "class_1": {"linestyle": "-", "marker": "o", "alpha": 0.95},
+}
 
 CLASS_COLUMNS = [
     "split",
@@ -286,6 +296,35 @@ PREFERENCE_TASK_AGREEMENT_COLUMNS = [
     "n_folds_b",
 ]
 
+KNN_AGREEMENT_COLUMNS = [
+    "split",
+    "dataset",
+    "fold",
+    "checkpoint",
+    "checkpoint_step",
+    "model_a",
+    "model_b",
+    "layer_a",
+    "layer_b",
+    "layer_depth",
+    "layer_depth_a",
+    "layer_depth_b",
+    "class_subset",
+    "n_aligned",
+    "n_items",
+    "k",
+    "k_effective",
+    "distance_metric",
+    "mean_jaccard",
+    "std_jaccard",
+    "mean_overlap_count",
+    "mean_overlap_fraction",
+    "random_overlap_fraction",
+    "normalized_overlap_fraction",
+    "is_aggregate",
+    "n_folds",
+]
+
 
 @dataclass(frozen=True)
 class DatasetSpec:
@@ -438,6 +477,17 @@ def parse_args() -> argparse.Namespace:
         "--pca2d_only",
         action="store_true",
         help="Only generate PCA-2D plots/variance CSV from cached or newly extracted representations.",
+    )
+    parser.add_argument(
+        "--neighborhood_only",
+        action="store_true",
+        help="Only compute kNN neighborhood-agreement metrics/plots from cached or newly extracted representations.",
+    )
+    parser.add_argument(
+        "--knn_neighbors",
+        type=int,
+        default=KNN_NEIGHBORS,
+        help="Number of same-class nearest neighbors for neighborhood-agreement analysis.",
     )
     parser.add_argument(
         "--skip_pca2d",
@@ -1146,6 +1196,89 @@ def align_ids(ids_a: np.ndarray, ids_b: np.ndarray) -> Tuple[np.ndarray, np.ndar
     return np.asarray(idx_a, dtype=int), np.asarray(idx_b, dtype=int)
 
 
+def common_id_order(model_ids: Dict[str, np.ndarray]) -> List[str]:
+    if not model_ids:
+        return []
+    models = list(model_ids)
+    common = set(model_ids[models[0]].tolist())
+    for model in models[1:]:
+        common.intersection_update(model_ids[model].tolist())
+    return [id_value for id_value in model_ids[models[0]].tolist() if id_value in common]
+
+
+def closest_layer_by_depth(
+    target_depth: float,
+    num_layers: int,
+    requested_layers_arg: Optional[Sequence[int]],
+) -> int:
+    layers = selected_layers(num_layers, requested_layers_arg)
+    return min(layers, key=lambda layer: abs(layer_depth(layer, num_layers) - target_depth))
+
+
+def knn_neighbor_sets(
+    X: np.ndarray,
+    k: int = KNN_NEIGHBORS,
+    metric: str = KNN_METRIC,
+) -> Tuple[List[set], int]:
+    if len(X) < 2:
+        return [], 0
+    k_effective = min(k, len(X) - 1)
+    n_neighbors = min(len(X), k_effective + 1)
+    nn = NearestNeighbors(n_neighbors=n_neighbors, metric=metric)
+    nn.fit(X)
+    indices = nn.kneighbors(X, return_distance=False)
+    neighbor_sets = []
+    for row_idx, row in enumerate(indices):
+        neighbors = [int(idx) for idx in row if int(idx) != row_idx]
+        neighbor_sets.append(set(neighbors[:k_effective]))
+    return neighbor_sets, k_effective
+
+
+def neighbor_overlap_stats(
+    neighbors_a: Sequence[set],
+    neighbors_b: Sequence[set],
+    k_effective: int,
+) -> Dict[str, float]:
+    if not neighbors_a or not neighbors_b or len(neighbors_a) != len(neighbors_b) or k_effective <= 0:
+        return {
+            "mean_jaccard": math.nan,
+            "std_jaccard": math.nan,
+            "mean_overlap_count": math.nan,
+            "mean_overlap_fraction": math.nan,
+            "random_overlap_fraction": math.nan,
+            "normalized_overlap_fraction": math.nan,
+        }
+
+    jaccards = []
+    overlaps = []
+    for set_a, set_b in zip(neighbors_a, neighbors_b):
+        intersection = len(set_a.intersection(set_b))
+        union = len(set_a.union(set_b))
+        jaccards.append(intersection / union if union else math.nan)
+        overlaps.append(intersection)
+
+    jaccards = np.asarray(jaccards, dtype=np.float64)
+    overlaps = np.asarray(overlaps, dtype=np.float64)
+    jaccards = jaccards[np.isfinite(jaccards)]
+    overlaps = overlaps[np.isfinite(overlaps)]
+    n_pool = max(len(neighbors_a) - 1, 1)
+    random_overlap = min(1.0, k_effective / n_pool)
+    mean_overlap_fraction = float(overlaps.mean() / k_effective) if len(overlaps) else math.nan
+    if np.isfinite(mean_overlap_fraction) and random_overlap < 1.0:
+        normalized = (mean_overlap_fraction - random_overlap) / (1.0 - random_overlap)
+    else:
+        normalized = math.nan
+
+    return {
+        "mean_jaccard": float(jaccards.mean()) if len(jaccards) else math.nan,
+        "std_jaccard": float(jaccards.std(ddof=1)) if len(jaccards) > 1 else math.nan,
+        "mean_overlap_count": float(overlaps.mean()) if len(overlaps) else math.nan,
+        "mean_overlap_fraction": mean_overlap_fraction,
+        "random_overlap_fraction": float(random_overlap),
+        "normalized_overlap_fraction": float(normalized) if np.isfinite(normalized) else math.nan,
+    }
+
+
 def temporal_fold_number(dataset: str) -> float:
     match = re.search(r"temporal_concord_fold_(\d+)", dataset)
     return float(match.group(1)) if match else math.nan
@@ -1356,6 +1489,143 @@ def compute_cross_model_cka(
             "layer_depth_b",
         ],
         count_cols=["n_aligned"],
+    )
+
+
+def compute_knn_neighborhood_agreement(
+    representation_index: Dict[Tuple[str, str, str], Path],
+    requested_layers_arg: Optional[Sequence[int]],
+    knn_neighbors: int = KNN_NEIGHBORS,
+) -> pd.DataFrame:
+    records = []
+    keys = sorted(representation_index)
+    dataset_names = sorted({key[0] for key in keys})
+    checkpoint_labels = sorted({key[2] for key in keys}, key=checkpoint_sort_key)
+
+    for dataset_name in tqdm(dataset_names, desc="kNN agreement"):
+        for checkpoint_label in checkpoint_labels:
+            model_names = sort_names_with_architecture_hint(
+                {
+                    model
+                    for ds, model, ckpt in keys
+                    if ds == dataset_name and ckpt == checkpoint_label
+                }
+            )
+            if len(model_names) < 2:
+                continue
+
+            loaded = {}
+            for model_name in model_names:
+                ids, labels, _, embeddings = load_cached_representations(
+                    representation_index[(dataset_name, model_name, checkpoint_label)]
+                )
+                loaded[model_name] = {
+                    "ids": ids,
+                    "labels": labels,
+                    "embeddings": embeddings,
+                    "num_layers": embeddings.shape[1],
+                }
+
+            shared_ids = common_id_order({model: loaded[model]["ids"] for model in model_names})
+            if len(shared_ids) < 2:
+                warn(f"Skipping kNN agreement for {dataset_name}/{checkpoint_label}: no shared ids.")
+                continue
+
+            aligned = {}
+            for model_name in model_names:
+                id_index = {id_value: idx for idx, id_value in enumerate(loaded[model_name]["ids"])}
+                idx = np.asarray([id_index[id_value] for id_value in shared_ids], dtype=int)
+                aligned[model_name] = {
+                    "labels": loaded[model_name]["labels"][idx],
+                    "embeddings": loaded[model_name]["embeddings"][idx],
+                    "num_layers": loaded[model_name]["num_layers"],
+                }
+
+            reference_labels = aligned[model_names[0]]["labels"]
+            for model_name in model_names[1:]:
+                if not np.array_equal(reference_labels, aligned[model_name]["labels"]):
+                    warn(
+                        f"Labels differ after id alignment for {dataset_name}/{checkpoint_label}/{model_name}; "
+                        "kNN agreement uses labels from the first model."
+                    )
+
+            neighbor_cache = {}
+            for model_name in model_names:
+                model_layers = selected_layers(aligned[model_name]["num_layers"], requested_layers_arg)
+                for layer in model_layers:
+                    for class_subset, label in [("class_0", 0), ("class_1", 1)]:
+                        mask = reference_labels == label
+                        X = aligned[model_name]["embeddings"][mask, layer, :]
+                        neighbors, k_effective = knn_neighbor_sets(X, k=knn_neighbors, metric=KNN_METRIC)
+                        neighbor_cache[(model_name, layer, class_subset)] = {
+                            "neighbors": neighbors,
+                            "k_effective": k_effective,
+                            "n_items": int(mask.sum()),
+                        }
+
+            for model_a, model_b in combinations(model_names, 2):
+                layers_a = selected_layers(aligned[model_a]["num_layers"], requested_layers_arg)
+                for layer_a in layers_a:
+                    depth_a = layer_depth(layer_a, aligned[model_a]["num_layers"])
+                    layer_b = closest_layer_by_depth(
+                        depth_a,
+                        aligned[model_b]["num_layers"],
+                        requested_layers_arg,
+                    )
+                    depth_b = layer_depth(layer_b, aligned[model_b]["num_layers"])
+                    for class_subset in ["class_0", "class_1"]:
+                        cached_a = neighbor_cache[(model_a, layer_a, class_subset)]
+                        cached_b = neighbor_cache[(model_b, layer_b, class_subset)]
+                        k_effective = min(cached_a["k_effective"], cached_b["k_effective"])
+                        stats = neighbor_overlap_stats(
+                            cached_a["neighbors"],
+                            cached_b["neighbors"],
+                            k_effective,
+                        )
+                        records.append(
+                            {
+                                "split": "test",
+                                "dataset": dataset_name,
+                                "fold": temporal_fold_number(dataset_name),
+                                "checkpoint": checkpoint_label,
+                                "checkpoint_step": checkpoint_step(checkpoint_label),
+                                "model_a": model_a,
+                                "model_b": model_b,
+                                "layer_a": layer_a,
+                                "layer_b": layer_b,
+                                "layer_depth": float((depth_a + depth_b) / 2.0),
+                                "layer_depth_a": depth_a,
+                                "layer_depth_b": depth_b,
+                                "class_subset": class_subset,
+                                "n_aligned": int(len(shared_ids)),
+                                "n_items": int(min(cached_a["n_items"], cached_b["n_items"])),
+                                "k": int(knn_neighbors),
+                                "k_effective": int(k_effective),
+                                "distance_metric": KNN_METRIC,
+                                **stats,
+                            }
+                        )
+
+    knn_df = pd.DataFrame(records)
+    return add_temporal_fold_aggregates(
+        knn_df,
+        group_cols=[
+            "split",
+            "checkpoint",
+            "checkpoint_step",
+            "model_a",
+            "model_b",
+            "layer_a",
+            "layer_b",
+            "layer_depth",
+            "layer_depth_a",
+            "layer_depth_b",
+            "class_subset",
+            "k",
+            "k_effective",
+            "distance_metric",
+        ],
+        count_cols=["n_aligned", "n_items"],
     )
 
 
@@ -2275,6 +2545,8 @@ def plot_model_comparison_metric(
     title: str,
     output_prefix: str,
     plots_dir: Path,
+    style_col: Optional[str] = None,
+    style_order: Optional[Sequence[str]] = None,
 ) -> None:
     if df.empty or metric_col not in df.columns:
         return
@@ -2291,6 +2563,14 @@ def plot_model_comparison_metric(
         models = sort_names_with_architecture_hint(checkpoint_df["model"].unique().tolist())
         if not dataset_names or not models:
             continue
+        style_values: List[str] = []
+        if style_col is not None and style_col in checkpoint_df.columns:
+            present_styles = set(checkpoint_df[style_col].dropna().unique().tolist())
+            style_values = [
+                value
+                for value in (style_order or sorted(present_styles))
+                if value in present_styles
+            ]
 
         palette = sns.color_palette("tab10", n_colors=len(models))
         color_map = dict(zip(models, palette))
@@ -2305,19 +2585,38 @@ def plot_model_comparison_metric(
         for ax, dataset in zip(axes, dataset_names):
             subset = checkpoint_df[checkpoint_df["dataset"] == dataset]
             for model in models:
-                model_data = subset[subset["model"] == model].sort_values("layer_depth")
-                if model_data.empty:
-                    continue
-                ax.plot(
-                    model_data["layer_depth"],
-                    model_data[metric_col],
-                    color=color_map[model],
-                    marker="o",
-                    linewidth=1.9,
-                    markersize=3.5,
-                    alpha=0.9,
-                    label=short_model_name(model),
-                )
+                if style_values:
+                    for style_value in style_values:
+                        model_data = subset[
+                            (subset["model"] == model)
+                            & (subset[style_col] == style_value)
+                        ].sort_values("layer_depth")
+                        if model_data.empty:
+                            continue
+                        style = CLASS_SUBSET_STYLES.get(style_value, {})
+                        ax.plot(
+                            model_data["layer_depth"],
+                            model_data[metric_col],
+                            color=color_map[model],
+                            linewidth=1.9,
+                            markersize=3.5,
+                            label=short_model_name(model),
+                            **style,
+                        )
+                else:
+                    model_data = subset[subset["model"] == model].sort_values("layer_depth")
+                    if model_data.empty:
+                        continue
+                    ax.plot(
+                        model_data["layer_depth"],
+                        model_data[metric_col],
+                        color=color_map[model],
+                        marker="o",
+                        linewidth=1.9,
+                        markersize=3.5,
+                        alpha=0.9,
+                        label=short_model_name(model),
+                    )
             style_plain_ax(ax, "Relative depth", ylabel)
             ax.set_xlim(-0.02, 1.02)
             ax.set_title(dataset, fontsize=13)
@@ -2334,12 +2633,25 @@ def plot_model_comparison_metric(
             )
             for model in models
         ]
+        if style_values:
+            handles.extend(
+                plt.Line2D(
+                    [0],
+                    [0],
+                    color="0.25",
+                    linewidth=1.9,
+                    markersize=3.5,
+                    label=CLASS_SUBSET_LABELS.get(style_value, style_value),
+                    **CLASS_SUBSET_STYLES.get(style_value, {}),
+                )
+                for style_value in style_values
+            )
         fig.suptitle(f"{title} — {checkpoint}", fontsize=16)
         fig.legend(
             handles,
             [handle.get_label() for handle in handles],
             loc="lower center",
-            ncol=4,
+            ncol=min(5, len(handles)),
             frameon=False,
             fontsize=9,
             bbox_to_anchor=(0.5, -0.02),
@@ -2350,65 +2662,240 @@ def plot_model_comparison_metric(
         plt.close(fig)
 
 
+def class_metric_frame(df: pd.DataFrame, metric_columns: Dict[str, str]) -> pd.DataFrame:
+    frames = []
+    for class_subset, metric_col in metric_columns.items():
+        if metric_col not in df.columns:
+            continue
+        sub = df.copy()
+        sub["class_subset"] = class_subset
+        sub["metric_value"] = sub[metric_col]
+        frames.append(sub)
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
 def plot_model_comparisons(
     class_df: pd.DataFrame,
     id_df: pd.DataFrame,
     plots_dir: Path,
     preference_df: Optional[pd.DataFrame] = None,
 ) -> None:
-    plot_model_comparison_metric(
+    centroid_by_class = class_metric_frame(
         class_df,
-        metric_col="centroid_euclidean",
+        {
+            "class_0": "centroid_euclidean_class_0",
+            "class_1": "centroid_euclidean_class_1",
+        },
+    )
+    plot_model_comparison_metric(
+        centroid_by_class,
+        metric_col="metric_value",
         ylabel="Euclidean",
-        title="Model comparison: centroid distance",
+        title="Model comparison: centroid distance by class",
         output_prefix="geometry_model_comparison_centroid_distance",
         plots_dir=plots_dir,
+        style_col="class_subset",
+        style_order=["class_0", "class_1"],
+    )
+    fisher_by_class = class_metric_frame(
+        class_df,
+        {
+            "class_0": "fisher_ratio_class_0",
+            "class_1": "fisher_ratio_class_1",
+        },
     )
     plot_model_comparison_metric(
-        class_df,
-        metric_col="fisher_ratio",
+        fisher_by_class,
+        metric_col="metric_value",
         ylabel="Ratio",
-        title="Model comparison: Fisher ratio",
+        title="Model comparison: Fisher ratio by class",
         output_prefix="geometry_model_comparison_fisher_ratio",
         plots_dir=plots_dir,
+        style_col="class_subset",
+        style_order=["class_0", "class_1"],
+    )
+
+    separation_df = class_df.copy()
+    if {
+        "between_class_mean_cosine_distance",
+        "within_class_0_mean_cosine_distance",
+        "within_class_1_mean_cosine_distance",
+    }.issubset(separation_df.columns):
+        separation_df["separation_ratio_class_0"] = (
+            separation_df["between_class_mean_cosine_distance"]
+            / (separation_df["within_class_0_mean_cosine_distance"] + EPS)
+        )
+        separation_df["separation_ratio_class_1"] = (
+            separation_df["between_class_mean_cosine_distance"]
+            / (separation_df["within_class_1_mean_cosine_distance"] + EPS)
+        )
+    separation_by_class = class_metric_frame(
+        separation_df,
+        {
+            "class_0": "separation_ratio_class_0",
+            "class_1": "separation_ratio_class_1",
+        },
     )
     plot_model_comparison_metric(
-        class_df,
-        metric_col="separation_ratio",
+        separation_by_class,
+        metric_col="metric_value",
         ylabel="Between / within cosine distance",
-        title="Model comparison: separation ratio",
+        title="Model comparison: separation ratio by class",
         output_prefix="geometry_model_comparison_separation_ratio",
         plots_dir=plots_dir,
+        style_col="class_subset",
+        style_order=["class_0", "class_1"],
     )
 
     if not id_df.empty:
-        id_all = id_df[id_df["subset"] == "all"].copy()
+        id_classes = id_df[id_df["subset"].isin(["class_0", "class_1"])].copy()
         plot_model_comparison_metric(
-            id_all,
+            id_classes,
             metric_col="pca_rank_99",
             ylabel="Components",
-            title="Model comparison: PCA 99% rank",
+            title="Model comparison: PCA 99% rank by class",
             output_prefix="geometry_model_comparison_pca99_rank",
             plots_dir=plots_dir,
+            style_col="subset",
+            style_order=["class_0", "class_1"],
         )
         plot_model_comparison_metric(
-            id_all,
+            id_classes,
             metric_col="ess_id",
             ylabel="ID",
-            title="Model comparison: ESS ID",
+            title="Model comparison: ESS ID by class",
             output_prefix="geometry_model_comparison_ess_id",
             plots_dir=plots_dir,
+            style_col="subset",
+            style_order=["class_0", "class_1"],
         )
 
     if preference_df is not None and not preference_df.empty:
-        plot_model_comparison_metric(
+        preference_by_class = class_metric_frame(
             preference_df,
-            metric_col="score_cohens_d",
-            ylabel="Direction strength (Cohen d)",
-            title="Model comparison: preference direction strength",
+            {
+                "class_0": "score_mean_class_0",
+                "class_1": "score_mean_class_1",
+            },
+        )
+        plot_model_comparison_metric(
+            preference_by_class,
+            metric_col="metric_value",
+            ylabel="Mean direction score",
+            title="Model comparison: preference direction score by class",
             output_prefix="geometry_model_comparison_preference_direction_strength",
             plots_dir=plots_dir,
+            style_col="class_subset",
+            style_order=["class_0", "class_1"],
         )
+
+
+def plot_knn_model_comparison(knn_df: pd.DataFrame, plots_dir: Path) -> None:
+    if knn_df.empty:
+        return
+    knn_df = drop_temporal_fold_rows(knn_df)
+    if knn_df.empty:
+        return
+    plot_k = int(knn_df["k"].dropna().iloc[0]) if "k" in knn_df.columns and knn_df["k"].notna().any() else KNN_NEIGHBORS
+
+    base_cols = ["split", "dataset", "checkpoint", "checkpoint_step", "class_subset", "mean_overlap_fraction"]
+    left = knn_df[base_cols].copy()
+    left["model"] = knn_df["model_a"]
+    left["layer"] = knn_df["layer_a"]
+    left["layer_depth"] = knn_df["layer_depth_a"]
+    right = knn_df[base_cols].copy()
+    right["model"] = knn_df["model_b"]
+    right["layer"] = knn_df["layer_b"]
+    right["layer_depth"] = knn_df["layer_depth_b"]
+    model_df = pd.concat([left, right], ignore_index=True, sort=False)
+    group_cols = ["split", "dataset", "checkpoint", "checkpoint_step", "model", "layer", "layer_depth", "class_subset"]
+    group_cols = [col for col in group_cols if col in model_df.columns]
+    model_df = (
+        model_df.groupby(group_cols, dropna=False)["mean_overlap_fraction"]
+        .mean()
+        .reset_index()
+    )
+    plot_model_comparison_metric(
+        model_df,
+        metric_col="mean_overlap_fraction",
+        ylabel=f"Shared {plot_k}-NN fraction",
+        title="Model comparison: neighborhood agreement by class",
+        output_prefix=f"geometry_model_comparison_knn_neighborhood_agreement_k{plot_k}",
+        plots_dir=plots_dir,
+        style_col="class_subset",
+        style_order=["class_0", "class_1"],
+    )
+
+
+def plot_knn_pair_heatmaps(knn_df: pd.DataFrame, plots_dir: Path) -> None:
+    if knn_df.empty:
+        return
+    knn_df = drop_temporal_fold_rows(knn_df)
+    if knn_df.empty:
+        return
+
+    out_dir = plots_dir / "neighborhood_agreement"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    cmap = sns.color_palette("crest", as_cmap=True)
+
+    for (checkpoint, dataset, class_subset), subset in knn_df.groupby(
+        ["checkpoint", "dataset", "class_subset"], dropna=False
+    ):
+        plot_k = int(subset["k"].dropna().iloc[0]) if "k" in subset.columns and subset["k"].notna().any() else KNN_NEIGHBORS
+        models = sort_names_with_architecture_hint(
+            sorted(set(subset["model_a"].tolist()) | set(subset["model_b"].tolist()))
+        )
+        if len(models) < 2:
+            continue
+
+        matrix = pd.DataFrame(np.eye(len(models)), index=models, columns=models, dtype=float)
+        pair_values = (
+            subset.groupby(["model_a", "model_b"], dropna=False)["mean_overlap_fraction"]
+            .mean()
+            .reset_index()
+        )
+        for _, row in pair_values.iterrows():
+            model_a = row["model_a"]
+            model_b = row["model_b"]
+            value = row["mean_overlap_fraction"]
+            matrix.loc[model_a, model_b] = value
+            matrix.loc[model_b, model_a] = value
+
+        display = matrix.copy()
+        display.index = [short_model_name(model) for model in display.index]
+        display.columns = [short_model_name(model) for model in display.columns]
+        fig, ax = plt.subplots(figsize=(7.4, 6.2))
+        sns.heatmap(
+            display,
+            ax=ax,
+            cmap=cmap,
+            vmin=0,
+            vmax=1,
+            annot=True,
+            fmt=".2f",
+            cbar_kws={"label": f"Shared {plot_k}-NN fraction"},
+        )
+        class_label = CLASS_SUBSET_LABELS.get(class_subset, class_subset)
+        ax.set_title(
+            f"{dataset}: neighborhood agreement ({class_label}) — {checkpoint}",
+            fontsize=13,
+        )
+        ax.set_xlabel("Model")
+        ax.set_ylabel("Model")
+        fig.tight_layout()
+        out = out_dir / (
+            f"geometry_knn_agreement_matrix_{safe_name(dataset)}_"
+            f"{safe_name(class_subset)}_{checkpoint_plot_label(checkpoint)}_k{plot_k}.svg"
+        )
+        fig.savefig(out, dpi=220)
+        plt.close(fig)
+
+
+def plot_knn_neighborhood_agreement(knn_df: pd.DataFrame, plots_dir: Path) -> None:
+    plot_knn_model_comparison(knn_df, plots_dir)
+    plot_knn_pair_heatmaps(knn_df, plots_dir)
 
 
 def plot_cka_heatmaps(cka_df: pd.DataFrame, plots_dir: Path) -> None:
@@ -2503,7 +2990,7 @@ def plot_checkpoint_drift(drift_df: pd.DataFrame, plots_dir: Path) -> None:
 
 def main() -> None:
     args = parse_args()
-    if args.pca2d_only or args.preference_only:
+    if args.pca2d_only or args.preference_only or args.neighborhood_only:
         args.plot = True
     np.random.seed(args.seed)
     if torch is not None:
@@ -2562,6 +3049,13 @@ def main() -> None:
             except pd.errors.EmptyDataError:
                 warn("Skipping preference-direction plots because one preference CSV is empty.")
         plot_model_comparisons(class_df, id_df, plots_dir, preference_direction_df)
+        knn_path = results_dir / "geometry_knn_neighborhood_agreement.csv"
+        if knn_path.exists():
+            try:
+                knn_df = pd.read_csv(knn_path)
+                plot_knn_neighborhood_agreement(knn_df, plots_dir)
+            except pd.errors.EmptyDataError:
+                warn(f"Skipping kNN neighborhood plots because {knn_path} is empty.")
         return
 
     dataset_specs = discover_datasets(Path(args.test_dir), args.datasets)
@@ -2592,6 +3086,17 @@ def main() -> None:
         write_csv(pd.DataFrame(), results_dir / "geometry_preference_directions.csv", PREFERENCE_DIRECTION_COLUMNS)
         write_csv(pd.DataFrame(), results_dir / "geometry_preference_model_agreement.csv", PREFERENCE_MODEL_AGREEMENT_COLUMNS)
         write_csv(pd.DataFrame(), results_dir / "geometry_preference_task_agreement.csv", PREFERENCE_TASK_AGREEMENT_COLUMNS)
+        write_csv(pd.DataFrame(), results_dir / "geometry_knn_neighborhood_agreement.csv", KNN_AGREEMENT_COLUMNS)
+        return
+
+    if args.neighborhood_only:
+        knn_df = compute_knn_neighborhood_agreement(
+            representation_index=representation_index,
+            requested_layers_arg=args.layers,
+            knn_neighbors=args.knn_neighbors,
+        )
+        write_csv(knn_df, results_dir / "geometry_knn_neighborhood_agreement.csv", KNN_AGREEMENT_COLUMNS)
+        plot_knn_neighborhood_agreement(knn_df, plots_dir)
         return
 
     if args.preference_only:
