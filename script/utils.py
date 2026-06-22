@@ -97,8 +97,8 @@ def get_last_token_embeddings(model, texts, tokenizer, device, batch_size:int=25
         hidden_states = torch.stack(hidden_states, dim=0)        # (num_layers, B, L, H)
 
         # Taking the last token embedding for each sequence
-        seq_len = attention_mask.size(1)
-        last_idx = attention_mask.sum(dim=1) - 1 # (B,)
+        positions = torch.arange(attention_mask.size(1), device=device)  # (L,)
+        last_idx = (positions * attention_mask).argmax(dim=1)            # (B,)
         batch_arange = torch.arange(input_ids.size(0), device=device)   # (B,)
 
         # Take last token on every layer
