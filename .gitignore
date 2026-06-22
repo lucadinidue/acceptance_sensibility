@@ -9,3 +9,5 @@ bash_script/
 */__pycache__/
 cristiano
 old/
+venv/*
+logs/*
