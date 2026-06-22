@@ -153,7 +153,7 @@ def main():
 
         for file_name in os.listdir(args.train_dir):
             dataset_name = file_name.split(".")[0]
-            if "coherence" not in dataset_name:
+            if "coherence" in dataset_name:
                 continue
             train_sentences, train_labels, _ = load_split(args.train_dir, file_name)
             test_sentences, test_labels, test_df = load_split(args.test_dir, file_name)
